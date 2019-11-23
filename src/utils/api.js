@@ -68,6 +68,16 @@ export const postRequest = (url, params, success, error) => {
   axios({
     method: 'post',
     url: `${base}${url}`,
+    params: params,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  }).then(success).catch(error);
+}
+export const postJSONRequest = (url, params, success, error) => {
+  axios({
+    method: 'post',
+    url: `${base}${url}`,
     data: params,
     // transformRequest: [function (data) {
     //   let ret = '';

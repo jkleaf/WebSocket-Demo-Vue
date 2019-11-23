@@ -2,46 +2,52 @@
   <el-tabs type="border-card">
     <el-tab-pane label="登录">
       <div class="block">
-        <el-form :rules="rules" label-position="left" v-model="loginForm" ref="loginForm"
-                 label-width="0px" v-loading="loading">
+        <el-form ref="loginForm" :rules="rules" :model="loginForm" label-width="0px" auto-complete="off"
+                 v-loading="loading">
           <h3 class="login_title">棋客登录</h3>
-          <el-form-item prop="account">
-            <el-input type="text" v-model="loginForm.username"
-                      auto-complete="off" placeholder="用户名"></el-input>
+          <el-form-item prop="username">
+            <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
           </el-form-item>
-          <el-form-item prop="checkPass">
+          <!--        <el-form ref="loginForm" :rules="rules" v-model="loginForm" label-position="left"-->
+          <!--                 label-width="0px">&lt;!&ndash;v-loading="loading"&ndash;&gt;-->
+          <!--          <h3 class="login_title">棋客登录</h3>-->
+          <!--          <el-form-item prop="username">-->
+          <!--            <el-input v-model="loginForm.username" auto-complete="off"-->
+          <!--                      placeholder="用户名"></el-input>-->
+          <!--          </el-form-item>-->
+          <el-form-item prop="password">
             <el-input type="password" v-model="loginForm.password"
-                      auto-complete="off" placeholder="密码"></el-input>
+                      placeholder="密码"></el-input>
           </el-form-item>
           <el-checkbox class="login_remember" v-model="checked"
                        label-position="left">记住密码
           </el-checkbox>
           <el-form-item style="width: 100%">
-            <el-button type="primary" style="width: 100%" @click="submitClick">登录</el-button>
+            <el-button type="primary" style="width: 100%" @click="loginSubmit">登录</el-button>
           </el-form-item>
         </el-form>
       </div>
     </el-tab-pane>
     <el-tab-pane label="注册">
       <div class="block">
-        <el-form :model="regValidateForm" status-icon :rules="regRules" ref="regValidateForm" label-width="100px"
-                 class="demo-ruleForm">
-          <el-form-item label="用户名" prop="account">
+        <el-form ref="regValidateForm" :model="regValidateForm" status-icon :rules="regRules" label-width="100px"
+                 auto-complete="off" class="demo-ruleForm">
+          <el-form-item label="用户名" prop="username">
             <el-input type="text" v-model="regValidateForm.username" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="邮箱" prop="email"
                         :rules="[{ required: true, message: '请输入邮箱地址', trigger: 'blur' },
-                      { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }]">
+                            { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }]">
             <el-input v-model="regValidateForm.email"></el-input>
           </el-form-item>
-          <el-form-item label="密码" prop="pass">
-            <el-input type="password" v-model="regValidateForm.password" autocomplete="off"></el-input>
+          <el-form-item label="密码" prop="password">
+            <el-input type="password" v-model="regValidateForm.password"></el-input>
           </el-form-item>
-          <el-form-item label="确认密码" prop="checkPass">
-            <el-input type="password" v-model="regValidateForm.checkPassword" autocomplete="off"></el-input>
+          <el-form-item label="确认密码" prop="checkPassword">
+            <el-input type="password" v-model="regValidateForm.checkPassword"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="submitForm('regValidateForm')">注册</el-button>
+            <el-button type="primary" @click="regSubmit('regValidateForm')">注册</el-button>
             <el-button @click="resetForm('regValidateForm')">重置</el-button>
           </el-form-item>
         </el-form>
@@ -57,14 +63,17 @@
       const validateAccount = (rule, value, callback) => {
         if (value === '') {
           callback(new Error('请输入用户名'));
-        } else {
-          //todo
+        } else if (value.length < 6 || value.length > 16) {
+          callback(new Error('用户名字符数应在6~16位之间'));
+        } else {//todo
           callback();
         }
       };
       const validatePass = (rule, value, callback) => {
         if (value === '') {
           callback(new Error('请输入密码'));
+        } else if (value.length < 6 || value.length > 16) {
+          callback(new Error('密码字符数应在6~16位之间'));
         } else {
           if (this.regValidateForm.checkPassword !== '') {
             this.$refs.regValidateForm.validateField('checkPassword');
@@ -75,95 +84,112 @@
       const validatePass2 = (rule, value, callback) => {
         if (value === '') {
           callback(new Error('请再次输入密码'));
-        } else if (value !== this.regValidateForm.password) {
+        } else if (value.length < 6 || value.length > 16) {
+          callback(new Error('密码字符数应在6~16位之间'));
+        } else if (this.regValidateForm.checkPassword !== '' && value !== this.regValidateForm.password) {
           callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
         }
       };
       return {
-        rules: {
-          account: [{required: true, message: '请输入用户名', trigger: 'blur'}],
-          checkPass: [{required: true, message: '请输入密码', trigger: 'blur'}],
-        },
-        regRules: {
-          account: [{required: true, message: '请输入用户名', trigger: 'blur'}],
-          pass: [{required: true, validator: validatePass, trigger: 'blur'}],
-          checkPass: [{required: true, validator: validatePass2, trigger: 'blur'}],
-        },
-        checked: true,
         loginForm: {
           username: 'tester',
-          password: '666'
+          password: '666666'
         },
+        rules: {
+          username: [{required: true, validator: validateAccount, trigger: 'blur'}],
+          password: [{required: true, validator: validatePass, trigger: 'blur'}],
+        },
+        regRules: {
+          username: [{required: true, validator: validateAccount, trigger: 'blur'}],
+          password: [{required: true, validator: validatePass, trigger: 'blur'}],
+          checkPassword: [{required: true, validator: validatePass2, trigger: 'blur'}],
+        },
+        checked: true,
         regValidateForm: {
           username: '',
           email: '',
           password: '',
           checkPassword: ''
         },
-        regForm:{
-          username: '',
-          email: '',
-          password: '',
-        },
         loading: false
       }
     },
     methods: {
-      submitClick: function () {
+      loginSubmit: function () {
         const _this = this;
-        this.loading = true;
-        // this.$refs['loginForm'].validate(valid=>{ //todo
-        //   if(valid){
-        //
-        //   }else {
-        //
-        //   }
-        // });
-        this.postRequest('/login', _this.loginForm, (res) => {
-          // this.$message({
-          //   message: '登录成功',
-          //   type: 'success'
-          // })
-          sessionStorage['token'] = res.data.token;
-          sessionStorage['username'] = _this.loginForm.username;
-          this.requestWithToken('/test', 'get', {}, (res) => {
-            this.$router.replace({path: '/home'})
-          }, (res) => {
-            this.$router.replace({path: '/home'})
-          })
-        }, (res) => {
-          this.$message({
-            message: '登录失败',
-            type: 'error'
-          })
-          _this.loading = false
-        })
-        // this.postRequest('/login', {
-        //   username: this.loginForm.username,
-        //   password: this.loginForm.password
-        // }).then(resp => {
-        //   _this.loading = false;
-        //   if (resp && resp.status == 200) {
-        //     var data = resp.data;
-        //     _this.$store.commit('login', data.obj);
-        //     var path = _this.$route.query.redirect;
-        //     _this.$router
-        //       .replace({path: path == '/' || path == undefined ? '/home' : path});
-        //   }
-        // });
+        this.$refs['loginForm'].validate(valid => { //todo
+          if (valid) {
+            this.loading = true;
+            this.postJSONRequest('/login', _this.loginForm, (res) => {
+              console.log(res.data)
+              if (res.data.code === '200') {
+                console.log(res.data);
+                this.$message({
+                  message: res.data.msg,
+                  type: 'success'
+                })
+                console.log(sessionStorage['token']);
+                sessionStorage['token'] = res.data.token;
+                sessionStorage['username'] = _this.loginForm.username;
+                this.$router.replace({path: '/home'});
+              } else if (res.data.code === '401') {
+                this.$message({
+                  message: res.data.msg,
+                  type: 'error'
+                })
+                _this.loading = false;
+              }
+              // this.requestWithToken('/test', 'get', {}, (res) => {
+              //   this.$router.replace({path: '/home'})
+              // }, (res) => {
+              // })
+            }, (res) => {
+              this.$message({
+                message: res.data.msg,
+                type: 'error'
+              })
+              _this.loading = false
+            })
+          } else {
+            console.log("invalid submit");
+            return false;
+          }
+        });
+
       },
-      submitForm: function (formName) {
+      regSubmit: function (formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.$message({
-              message: '注册成功!',
-              type: 'success'
+            let regParams = {
+              username: this.regValidateForm.username,
+              password: this.regValidateForm.password,
+              email: this.regValidateForm.email
+            };
+            this.postJSONRequest("/user/reg", regParams, res => {
+              console.log(res.data)
+              if (res.data.code === 200) {
+                this.$message({
+                  message: res.data.message,
+                  type: 'success'
+                })
+              } else if (res.data.code === 201) {
+                this.$message({
+                  message: res.data.message,
+                  type: 'error'
+                })
+              }
+            }, res => {
+              console.log(res.data)
+              this.$message({
+                message: res.data.message,
+                type: 'error'
+              })
             })
           } else {
             this.$message({
-              message: '注册失败!',
+              message: '注册内容不合法!',
               type: 'error'
             })
             return false;

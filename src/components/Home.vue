@@ -27,17 +27,17 @@
     <el-container>
       <el-header style="text-align: right; font-size: 20px; height: 75px">
         <el-badge :value="'99+'" class="item">
-          <el-button size="large">回复</el-button>
+          <el-button size="large" @click="openReplyNotification">回复</el-button>
         </el-badge>
         <el-badge :value="2" class="item" type="primary">
-          <el-button size="large">系统消息</el-button>
+          <el-button size="large" @click="">系统消息</el-button>
         </el-badge>
         <el-dropdown>
           <i class="el-icon-setting" style="margin-right: 15px"></i>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item>do something</el-dropdown-item>
             <el-dropdown-item>do something</el-dropdown-item>
-            <el-dropdown-item>do something</el-dropdown-item>
+            <el-dropdown-item @click.native="logout">退出</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <!--        <div class="demo-basic&#45;&#45;circle">-->
@@ -50,69 +50,154 @@
 
       <el-main style="background-color: rgb(238, 241, 246)">
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
         <el-row :gutter="20">
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-          <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
+          <el-col :span="6">
+            <div class="grid-content bg-purple"></div>
+          </el-col>
         </el-row>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="1000">
+        </el-pagination>
       </el-main>
     </el-container>
     <el-drawer
-      title="我是标题"
+      title="个人信息"
       :visible.sync="drawer"
       :direction="direction">
       <span>我来了</span>
@@ -152,35 +237,55 @@
         }, {
           date: '2016-05-11',
           name: 'Player8',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
-        },{
+        }, {
           date: '2016-05-11',
           name: 'Player0',
         }]
       }
+    },
+    methods: {
+      logout: function () {
+        const _this = this;
+        this.$confirm("确认退出吗?", "提示", {
+          //type: 'warning'
+        }).then(() => {
+          sessionStorage.removeItem("user");
+          _this.$router.replace("/");
+        })
+          .catch(() => {
+          });
+      },
+      openReplyNotification: function () {
+        this.$notify.info({
+          title: '消息',
+          message: this.$createElement('i', {style: 'color: teal'}, '哦吼！你有一条未读新消息'),
+          position: 'bottom-right'
+        });
+      },
     }
   };
 </script>
@@ -207,28 +312,41 @@
 
   .el-row {
     margin-bottom: 20px;
-  &:last-child {
-     margin-bottom: 0;
-   }
+
+  &
+  :last-child {
+    margin-bottom: 0;
+  }
+
   }
   .el-col {
     border-radius: 4px;
   }
+
   .bg-purple-dark {
     background: #99a9bf;
   }
+
   .bg-purple {
     background: #d3dce6;
   }
+
   .bg-purple-light {
     background: #e5e9f2;
   }
+
   .grid-content {
     border-radius: 4px;
     min-height: 36px;
   }
+
   .row-bg {
     padding: 10px 0;
     background-color: #f9fafc;
+  }
+
+  .el-icon-setting:before {
+    content: "\E6CA";
+    font-size: x-large;
   }
 </style>

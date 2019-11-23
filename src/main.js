@@ -12,6 +12,7 @@ import {postRequest} from './utils/api'
 import {deleteRequest} from './utils/api'
 import {putRequest} from './utils/api'
 import {requestWithoutToken} from './utils/api'
+import {postJSONRequest} from './utils/api'
 import {requestWithToken} from './utils/api'
 
 Vue.config.productionTip = false
@@ -21,6 +22,7 @@ Vue.use(ElementUI)
 Vue.prototype.postRequestWithToken = postRequestWithToken;
 Vue.prototype.requestWithoutToken = requestWithoutToken;
 Vue.prototype.requestWithToken = requestWithoutToken;
+Vue.prototype.postJSONRequest = postJSONRequest;
 Vue.prototype.getRequest = getRequest;
 Vue.prototype.postRequest = postRequest;
 Vue.prototype.deleteRequest = deleteRequest;
