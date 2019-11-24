@@ -23,7 +23,7 @@ import {Message} from 'element-ui'
 //     Message.error({message: '未知错误!'});
 //   }
 // })
-let base = 'http://localhost:8081';
+let base = '';
 export const postRequestWithToken = (url, params, success, error) => {
   axios({
     method: 'post',

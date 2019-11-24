@@ -147,7 +147,7 @@
               // })
             }, (res) => {
               this.$message({
-                message: res.data.msg,
+                message: '服务器出问题了',
                 type: 'error'
               })
               _this.loading = false
