@@ -16,8 +16,15 @@
           <!--                      placeholder="用户名"></el-input>-->
           <!--          </el-form-item>-->
           <el-form-item prop="password">
-            <el-input type="password" v-model="loginForm.password"
-                      placeholder="密码"></el-input>
+            <el-input v-model="loginForm.password"
+                      placeholder="密码" show-password></el-input>
+          </el-form-item>
+          <el-form-item prop="captcha" style="text-align: left">
+            <el-input v-model="verCode" placeholder="验证码"
+                      style="width: 250px; height:48px; margin-right: 50px">
+            </el-input>
+            <img id="verImg" :src="verifyImg" @click="switchCaptcha" width="130px" height="48px"
+                 style="" alt="验证码加载失败"/>
           </el-form-item>
           <el-checkbox class="login_remember" v-model="checked"
                        label-position="left">记住密码
@@ -92,6 +99,13 @@
           callback();
         }
       };
+      const validateCaptcha = (rule, value, callback) => {//todo 动态检验
+        if (value === '') {
+          callback(new Error('验证码不能为空!'));
+        } else {
+          callback();
+        }
+      };
       return {
         loginForm: {
           username: 'tester',
@@ -100,6 +114,7 @@
         rules: {
           username: [{required: true, validator: validateAccount, trigger: 'blur'}],
           password: [{required: true, validator: validatePass, trigger: 'blur'}],
+          captcha:  [{required: true, validator: validateCaptcha, trigger: 'blur'}]
         },
         regRules: {
           username: [{required: true, validator: validateAccount, trigger: 'blur'}],
@@ -113,15 +128,48 @@
           password: '',
           checkPassword: ''
         },
-        loading: false
+        loading: false,
+        verKey: '',
+        verCode: '',
+        verifyImg: ''
       }
     },
     methods: {
+      getCaptcha: function () {
+        this.requestWithoutToken('/login/captcha', 'get', '', res => {
+          let captcha = JSON.parse(res.data.data);
+          this.verKey = captcha.verKey;
+          this.verifyImg = captcha.image;
+        }, res => {
+        });
+      },
+      switchCaptcha: function (event) {
+        this.getCaptcha()
+        // let id = event.currentTarget.id;
+      },
+      checkCaptcha: function () {
+        let captchaParams = {
+          verKey: this.verKey,
+          verCode: this.verCode
+        };
+        this.requestWithoutToken('/login/captcha', 'post', captchaParams, res => {
+          let msg = res.data.data.message;
+          if (msg === '验证码错误!') {
+            this.$message({
+              message: msg,
+              type: 'error'
+            })
+          } else {
+          }
+        }, res => {
+        })
+      },
       loginSubmit: function () {
         const _this = this;
         this.$refs['loginForm'].validate(valid => { //todo
           if (valid) {
             this.loading = true;
+            this.checkCaptcha();//todo
             this.postJSONRequest('/login', _this.loginForm, (res) => {
               console.log(res.data)
               if (res.data.code === '200') {
@@ -199,6 +247,9 @@
       resetForm: function (formName) {
         this.$refs[formName].resetFields();
       }
+    },
+    mounted() {
+      this.getCaptcha();
     }
   }
 </script>
