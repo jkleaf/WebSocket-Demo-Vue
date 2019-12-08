@@ -30,10 +30,10 @@ export const postRequestWithToken = (url, params, success, error) => {
     url: `${base}${url}`,
     params: params,
     // transformRequest: [function (data) {
-    //   let ret = ''
-    //   for (let it in data) {
-    //     ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-    //   }
+    //   let ret = '';
+    //   data.forEach(item => {
+    //     ret += encodeURIComponent(item) + '=' + encodeURIComponent(data[item]) + '&'
+    //   });
     //   return ret
     // }],
     headers: {
@@ -48,8 +48,8 @@ export const requestWithToken = (url, method, params, success, error) => {
     url: `${base}${url}`,
     params: params,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Bearer '+sessionStorage['token']
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": "Bearer " + sessionStorage['token']
       // 'token': sessionStorage['token']
     }
   }).then(success).catch(error);
@@ -79,17 +79,6 @@ export const postJSONRequest = (url, params, success, error) => {
     method: 'post',
     url: `${base}${url}`,
     data: params,
-    // transformRequest: [function (data) {
-    //   let ret = '';
-    //   data.forEach(item => {
-    //     ret += encodeURIComponent(item) + '=' + encodeURIComponent(data[item]) + '&'
-    //   });
-    //   return ret
-    // }],
-    headers: {
-      // 'Content-Type': 'application/x-www-form-urlencoded'
-      'Content-Type': 'application/json;charset=utf-8'
-    }
   }).then(success).catch(error);
 }
 export const uploadFileRequest = (url, params) => {

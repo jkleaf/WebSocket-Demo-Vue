@@ -114,7 +114,7 @@
         rules: {
           username: [{required: true, validator: validateAccount, trigger: 'blur'}],
           password: [{required: true, validator: validatePass, trigger: 'blur'}],
-          captcha:  [{required: true, validator: validateCaptcha, trigger: 'blur'}]
+          captcha: [{required: true, validator: validateCaptcha, trigger: 'blur'}]
         },
         regRules: {
           username: [{required: true, validator: validateAccount, trigger: 'blur'}],
@@ -131,7 +131,8 @@
         loading: false,
         verKey: '',
         verCode: '',
-        verifyImg: ''
+        verifyImg: '',
+        // verImgIsCorrect: false,
       }
     },
     methods: {
@@ -147,65 +148,90 @@
         this.getCaptcha()
         // let id = event.currentTarget.id;
       },
-      checkCaptcha: function () {
-        let captchaParams = {
-          verKey: this.verKey,
-          verCode: this.verCode
-        };
-        this.requestWithoutToken('/login/captcha', 'post', captchaParams, res => {
-          let msg = res.data.data.message;
-          if (msg === '验证码错误!') {
-            this.$message({
-              message: msg,
-              type: 'error'
-            })
-          } else {
-          }
-        }, res => {
-        })
-      },
+      // checkCaptcha: function () {
+      //   let isCorrect = false;
+      //   let captchaParams = {
+      //     verKey: this.verKey,
+      //     verCode: this.verCode
+      //   };
+      //   this.requestWithoutToken('/login/captcha', 'post', captchaParams, res => {
+      //     let msg = res.data.message;
+      //     if (msg === '验证码错误!') {
+      //       this.$message({
+      //         message: msg,
+      //         type: 'error'
+      //       })
+      //       isCorrect = false;
+      //       // this.verImgIsCorrect=false;
+      //     } else {
+      //       isCorrect = true; // because of async
+      //       // this.verImgIsCorrect=true;
+      //     }
+      //   }, res => {
+      //     console.log("error")
+      //     isCorrect = false;
+      //   })
+      //   console.log("isCorrect=" + isCorrect)
+      //   return isCorrect;
+      // },
       loginSubmit: function () {
         const _this = this;
         this.$refs['loginForm'].validate(valid => { //todo
           if (valid) {
             this.loading = true;
-            this.checkCaptcha();//todo
-            this.postJSONRequest('/login', _this.loginForm, (res) => {
-              console.log(res.data)
-              if (res.data.code === '200') {
-                console.log(res.data);
+            let captchaParams = {
+              verKey: this.verKey,
+              verCode: this.verCode
+            };
+            this.requestWithoutToken('/login/captcha', 'post', captchaParams, res => {
+              let msg = res.data.message;
+              if (msg === '验证码错误!') {
                 this.$message({
-                  message: res.data.msg,
-                  type: 'success'
-                })
-                console.log(sessionStorage['token']);
-                sessionStorage['token'] = res.data.token;
-                sessionStorage['username'] = _this.loginForm.username;
-                this.$router.replace({path: '/home'});
-              } else if (res.data.code === '401') {
-                this.$message({
-                  message: res.data.msg,
+                  message: msg,
                   type: 'error'
                 })
                 _this.loading = false;
+              } else {
+                this.postJSONRequest('/login', _this.loginForm, (res) => {
+                  console.log(res.data);
+                  if (res.data.code === '200') {
+                    console.log(res.data);
+                    this.$message({
+                      message: res.data.msg,
+                      type: 'success'
+                    })
+                    console.log('token before: '+sessionStorage['token'])
+                    sessionStorage['token'] = res.data.token;
+                    sessionStorage['username'] = _this.loginForm.username;
+                    console.log('token after: '+sessionStorage['token']);
+                    // this.$router.replace({path: '/home'});
+                    this.requestWithToken('/test', 'get', {}, (res) => {
+                      this.$router.replace({path: '/home'})
+                    }, (res) => {
+                    })
+                  } else if (res.data.code === '401') {
+                    this.$message({
+                      message: res.data.msg,
+                      type: 'error'
+                    })
+                    _this.loading = false;
+                  }
+                }, (res) => {
+                  this.$message({
+                    message: '服务器出问题了',
+                    type: 'error'
+                  })
+                  _this.loading = false
+                })
               }
-              // this.requestWithToken('/test', 'get', {}, (res) => {
-              //   this.$router.replace({path: '/home'})
-              // }, (res) => {
-              // })
-            }, (res) => {
-              this.$message({
-                message: '服务器出问题了',
-                type: 'error'
-              })
-              _this.loading = false
+            }, res => {
+              console.log(res)
             })
           } else {
             console.log("invalid submit");
             return false;
           }
         });
-
       },
       regSubmit: function (formName) {
         this.$refs[formName].validate((valid) => {

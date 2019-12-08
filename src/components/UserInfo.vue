@@ -1,26 +1,28 @@
 <template>
-<!--  <el-tabs type="border-card">-->
-<!--    <el-tab-pane label="登录">-->
-      <div class="block">
-        <el-form ref="loginForm" :rules="rules" :model="loginForm" label-width="0px" auto-complete="off">
-          <el-form-item prop="username">
-            <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
-          </el-form-item>
-        </el-form>
-<!--        <el-form ref="loginForm" :rules="rules" v-model="loginForm" label-position="left"-->
-<!--                 label-width="0px" v-loading="loading">-->
-<!--          <h3 class="login_title">棋客登录</h3>-->
-<!--          <el-form-item prop="username">-->
-<!--            <el-input v-model="loginForm.username" auto-complete="off"-->
-<!--                      placeholder="用户名"></el-input>-->
-<!--          </el-form-item>-->
-<!--        </el-form>-->
-      </div>
-<!--    </el-tab-pane>-->
-<!--    <el-tab-pane label="注册">-->
+  <!--  <el-tabs type="border-card">-->
+  <!--    <el-tab-pane label="登录">-->
+  <div class="block">
+    <el-form ref="loginForm" :rules="rules" :model="loginForm" label-width="0px" auto-complete="off">
+      <el-form-item prop="username">
+        <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
+      </el-form-item>
+      <el-button type="primary" style="width: 100%" @click="loginSubmit">登录</el-button><br><br>
+      <el-button type="primary" style="width: 100%" @click="regSubmit">注册</el-button>
+    </el-form>
+    <!--        <el-form ref="loginForm" :rules="rules" v-model="loginForm" label-position="left"-->
+    <!--                 label-width="0px" v-loading="loading">-->
+    <!--          <h3 class="login_title">棋客登录</h3>-->
+    <!--          <el-form-item prop="username">-->
+    <!--            <el-input v-model="loginForm.username" auto-complete="off"-->
+    <!--                      placeholder="用户名"></el-input>-->
+    <!--          </el-form-item>-->
+    <!--        </el-form>-->
+  </div>
+  <!--    </el-tab-pane>-->
+  <!--    <el-tab-pane label="注册">-->
 
-<!--    </el-tab-pane>-->
-<!--  </el-tabs>-->
+  <!--    </el-tab-pane>-->
+  <!--  </el-tabs>-->
 
 </template>
 
@@ -39,6 +41,25 @@
         loading: false,
       }
     },
+    methods: {
+      loginSubmit: function () {
+        sessionStorage['token'] = 'eyJhbGciOiJIUzI1NiJ9.eyJhdXRob3JpdGllcyI6IiIsInN1YiI6InRlc3RlciIsImV4cCI6MTU3NTcxNDg5MX0.PppoQnJao9o9GPyK6f4zzecYNWqZxSwTtQFziUohnUQ';
+        console.log('Bearer ' + sessionStorage['token'])
+        this.requestWithToken('/test', 'get', {}, (res) => {
+          // this.requestWithToken('/test', 'get', {}, (res) => {
+          //   this.$router.replace({path: '/home'})
+          // }, (res) => {
+          // })
+        }, (res) => {
+        })
+      },
+      regSubmit: function () {
+        this.requestWithoutToken('/login/captcha', 'get', '', res => {
+
+        }, res => {
+        });
+      }
+    }
   }
 </script>
 
