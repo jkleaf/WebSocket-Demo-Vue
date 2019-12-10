@@ -205,10 +205,10 @@
                     sessionStorage['username'] = _this.loginForm.username;
                     console.log('token after: '+sessionStorage['token']);
                     // this.$router.replace({path: '/home'});
-                    this.requestWithToken('/test', 'get', {}, (res) => {
+                    // this.requestWithToken('/test', 'get', {}, (res) => {
                       this.$router.replace({path: '/home'})
-                    }, (res) => {
-                    })
+                    // }, (res) => {
+                    // })
                   } else if (res.data.code === '401') {
                     this.$message({
                       message: res.data.msg,

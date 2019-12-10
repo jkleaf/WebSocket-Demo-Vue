@@ -1,5 +1,7 @@
 <template>
+  <!--  <div>-->
   <el-tabs v-model="activeName" @tab-click="handleClick">
+    <!--    <div>-->
     <el-tab-pane label="首页" name="first">
       <hall ref="hall"></hall>
       <!--        <router-link to="/hall">HALL</router-link>-->
@@ -12,8 +14,10 @@
       <forum ref="forum"></forum>
       <!--        <router-link to="/forum">FORUM</router-link>-->
     </el-tab-pane>
-
+    <!--    <router-view/>-->
+    <!--    </div>-->
   </el-tabs>
+  <!--  </div>-->
 </template>
 
 <script>
@@ -22,30 +26,11 @@
   import Forum from "./Forum"
 
   export default {
-    components: {
-      Hall, Forum, Statistics
-    },
-    data() {
-      return {
-        activeName: 'first'
-      }
-    },
-    methods: {
-      handleClick(tab, event) {
-        console.log(tab, event);
-      },
-
-    }
-  };
+    components: {Hall, Forum, Statistics},
+    // name: "Test"
+  }
 </script>
 
 <style scoped>
-  /*.el-tabs--bottom,*/
-  /*.el-tabs__item.is-bottom:nth-child(2),*/
-  /*.el-tabs--bottom .el-tabs__item.is-top:nth-child(2),*/
-  /*.el-tabs--top .el-tabs__item.is-bottom:nth-child(2),*/
-  /*.el-tabs--top .el-tabs__item.is-top:nth-child(2) {*/
-  /*  padding-left: 0;*/
-  /*  font-size: x-large;*/
-  /*}*/
+
 </style>

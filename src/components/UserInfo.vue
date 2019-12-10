@@ -1,28 +1,31 @@
 <template>
-  <!--  <el-tabs type="border-card">-->
-  <!--    <el-tab-pane label="登录">-->
-  <div class="block">
-    <el-form ref="loginForm" :rules="rules" :model="loginForm" label-width="0px" auto-complete="off">
-      <el-form-item prop="username">
-        <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
-      </el-form-item>
-      <el-button type="primary" style="width: 100%" @click="loginSubmit">登录</el-button><br><br>
-      <el-button type="primary" style="width: 100%" @click="regSubmit">注册</el-button>
-    </el-form>
-    <!--        <el-form ref="loginForm" :rules="rules" v-model="loginForm" label-position="left"-->
-    <!--                 label-width="0px" v-loading="loading">-->
-    <!--          <h3 class="login_title">棋客登录</h3>-->
-    <!--          <el-form-item prop="username">-->
-    <!--            <el-input v-model="loginForm.username" auto-complete="off"-->
-    <!--                      placeholder="用户名"></el-input>-->
-    <!--          </el-form-item>-->
-    <!--        </el-form>-->
-  </div>
-  <!--    </el-tab-pane>-->
-  <!--    <el-tab-pane label="注册">-->
+  <h1>
+    User Info
+  </h1>
+<!--  &lt;!&ndash;  <el-tabs type="border-card">&ndash;&gt;-->
+<!--  &lt;!&ndash;    <el-tab-pane label="登录">&ndash;&gt;-->
+<!--  <div class="block">-->
+<!--    <el-form ref="loginForm" :rules="rules" :model="loginForm" label-width="0px" auto-complete="off">-->
+<!--      <el-form-item prop="username">-->
+<!--        <el-input v-model="loginForm.username" placeholder="用户名"></el-input>-->
+<!--      </el-form-item>-->
+<!--      <el-button type="primary" style="width: 100%" @click="loginSubmit">登录</el-button><br><br>-->
+<!--      <el-button type="primary" style="width: 100%" @click="regSubmit">注册</el-button>-->
+<!--    </el-form>-->
+<!--    &lt;!&ndash;        <el-form ref="loginForm" :rules="rules" v-model="loginForm" label-position="left"&ndash;&gt;-->
+<!--    &lt;!&ndash;                 label-width="0px" v-loading="loading">&ndash;&gt;-->
+<!--    &lt;!&ndash;          <h3 class="login_title">棋客登录</h3>&ndash;&gt;-->
+<!--    &lt;!&ndash;          <el-form-item prop="username">&ndash;&gt;-->
+<!--    &lt;!&ndash;            <el-input v-model="loginForm.username" auto-complete="off"&ndash;&gt;-->
+<!--    &lt;!&ndash;                      placeholder="用户名"></el-input>&ndash;&gt;-->
+<!--    &lt;!&ndash;          </el-form-item>&ndash;&gt;-->
+<!--    &lt;!&ndash;        </el-form>&ndash;&gt;-->
+<!--  </div>-->
+<!--  &lt;!&ndash;    </el-tab-pane>&ndash;&gt;-->
+<!--  &lt;!&ndash;    <el-tab-pane label="注册">&ndash;&gt;-->
 
-  <!--    </el-tab-pane>-->
-  <!--  </el-tabs>-->
+<!--  &lt;!&ndash;    </el-tab-pane>&ndash;&gt;-->
+<!--  &lt;!&ndash;  </el-tabs>&ndash;&gt;-->
 
 </template>
 

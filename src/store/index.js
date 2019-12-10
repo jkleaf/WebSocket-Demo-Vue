@@ -7,22 +7,32 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    user:{
-      username:''
+    user: {
+      username: ''
     },
     stomp: null,
   },
-  mutations:{
-    login(state, user){
+  mutations: {
+    login(state, user) {
       state.user = user;
       window.sessionStorage.setItem('user', JSON.stringify(user));
     },
-    logout(state){
+    logout(state) {
       window.sessionStorage.removeItem('user');
       state.routes = [];
     },
   },
-  actions:{
+  actions: {
+    connect(context) {
+      context.state.stomp = Stomp.over(new SockJS("/ws"));
+      context.state.stomp.connect({}, success => {
+        context.state.stomp.subscribe("", msg => {
+
+        })
+      }, fail => {
+
+      })
+    }
     // connect(context){
     //   context.state.stomp = Stomp.over(new SockJS("/ws/endpointChat"));
     //   context.state.stomp.connect({}, frame=> {
