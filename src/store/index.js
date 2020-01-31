@@ -8,9 +8,12 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     user: {
-      username: ''
+      username: '',
+      //password: '', //todo
     },
     stomp: null,
+    roomMsgList: [],
+
   },
   mutations: {
     login(state, user) {

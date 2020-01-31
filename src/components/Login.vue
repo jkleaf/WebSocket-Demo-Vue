@@ -24,7 +24,7 @@
                       style="width: 250px; height:48px; margin-right: 50px">
             </el-input>
             <img id="verImg" :src="verifyImg" @click="switchCaptcha" width="130px" height="48px"
-                 style="" alt="验证码加载失败"/>
+                 style="" :alt="loaded?'验证码加载中':'验证码加载失败'"/>
           </el-form-item>
           <el-checkbox class="login_remember" v-model="checked"
                        label-position="left">记住密码
@@ -132,16 +132,19 @@
         verKey: '',
         verCode: '',
         verifyImg: '',
+        loaded: true,
         // verImgIsCorrect: false,
       }
     },
     methods: {
       getCaptcha: function () {
         this.requestWithoutToken('/login/captcha', 'get', '', res => {
+          this.loaded = true;
           let captcha = JSON.parse(res.data.data);
           this.verKey = captcha.verKey;
           this.verifyImg = captcha.image;
         }, res => {
+          this.loaded = false;
         });
       },
       switchCaptcha: function (event) {
@@ -200,15 +203,23 @@
                       message: res.data.msg,
                       type: 'success'
                     })
-                    console.log('token before: '+sessionStorage['token'])
+                    console.log('token before: ' + sessionStorage['token']);
                     sessionStorage['token'] = res.data.token;
                     sessionStorage['username'] = _this.loginForm.username;
-                    console.log('token after: '+sessionStorage['token']);
+                    console.log('token after: ' + sessionStorage['token']);
                     // this.$router.replace({path: '/home'});
                     // this.requestWithToken('/test', 'get', {}, (res) => {
-                      this.$router.replace({path: '/home'})
+                    this.$router.replace({path: '/home'});
                     // }, (res) => {
                     // })
+                    // TODO remember password
+                    // if (_this.checked) {
+                    //   localStorage.setItem('wsd_password', _this.loginForm.password);
+                    // } else {
+                    //   if (localStorage.getItem('wsd_password') != null) {
+                    //     localStorage.removeItem('wsd_password');
+                    //   }
+                    // }
                   } else if (res.data.code === '401') {
                     this.$message({
                       message: res.data.msg,
