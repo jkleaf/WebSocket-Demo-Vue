@@ -1,5 +1,3 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
 import router from './router'
@@ -15,9 +13,9 @@ import {requestWithoutToken} from './utils/api'
 import {postJSONRequest} from './utils/api'
 import {requestWithToken} from './utils/api'
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-Vue.use(ElementUI)
+Vue.use(ElementUI);
 
 Vue.prototype.postRequestWithToken = postRequestWithToken;
 Vue.prototype.requestWithoutToken = requestWithoutToken;
@@ -27,6 +25,22 @@ Vue.prototype.getRequest = getRequest;
 Vue.prototype.postRequest = postRequest;
 Vue.prototype.deleteRequest = deleteRequest;
 Vue.prototype.putRequest = putRequest;
+
+router.beforeEach((to, from, next) => {
+    if (to.name === 'Login') {
+      next();
+      return;
+    }
+    let name = store.state.user.username;
+    if (name == null) {
+      next();
+    } else {
+      store.dispatch('connect');
+      next();
+    }
+  }
+);
+
 
 /* eslint-disable no-new */
 new Vue({

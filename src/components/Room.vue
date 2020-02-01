@@ -7,6 +7,7 @@
       </el-header>
       <el-container>
         <el-main>
+          <span></span>
           <canvas id="chessboard" width="510px" height="510px"></canvas>
         </el-main>
         <el-aside width="550px" :class="{'display-none':asideHidden}">
@@ -48,7 +49,8 @@
                   </div>
                 </template>
                 <div style="text-align: left;margin-top: 50px">
-                  <el-input v-model="msg" placeholder="请输入内容..." size="mini" style="width: 400px;" type="textarea"
+                  <el-input id="input" v-model="msg" placeholder="请输入内容..." size="mini" style="width: 400px;"
+                            type="textarea"
                             autosize></el-input>
                   <!--                  <img src="../assets/smile-wink.png" class="emoji" alt="">-->
                   <!--                  <i class="fa fa-smile-o emoji" aria-hidden="true"></i>-->
@@ -59,9 +61,11 @@
                     title="Emoji"
                     width="200px"
                     trigger="click">
-                    <p>😀 😁 😂 🤣 😃 😄 😅 😆 😉 😊 😋 😎 😛 👎</p>
-                    <p>🙂 🤗 🤩 🤔 🤨 😐 😑 🙄 😣 😥 😮 😫 😝 💩</p>
-                    <p>😨 😩 🤯 😬 😰 😱 🥵 😵 😡 😠 🤬 😷 🤮 🥳</p>
+                    <p v-for="i in 3">
+                      <span v-for="j in 14" class="emoji-span" @click="sendEmoji(emoji[(i-1)*14+j])">
+                        {{emoji[(i-1)*14+j]}}
+                      </span>
+                    </p>
                     <el-button size="small" slot="reference" class="emoji">表情</el-button>
                   </el-popover>
                   <!--                  </div>-->
@@ -77,14 +81,14 @@
 
               <el-tab-pane label="设置">
                 <div class="sound-dashboard">
-                <el-progress type="dashboard" :percentage="percentage" :color="colors"></el-progress>
-<!--                  <div>-->
-<!--                  <span style="display: flex">调节音量</span>-->
-<!--                  </div>-->
+                  <el-progress type="dashboard" :percentage="percentage" :color="colors"></el-progress>
+                  <!--                  <div>-->
+                  <!--                  <span style="display: flex">调节音量</span>-->
+                  <!--                  </div>-->
                   <el-button-group class="adjust-sound">
-                  <el-button icon="el-icon-minus" @click="decrease"></el-button>
-                  <el-button icon="el-icon-plus" @click="increase"></el-button>
-                </el-button-group>
+                    <el-button icon="el-icon-minus" @click="decrease"></el-button>
+                    <el-button icon="el-icon-plus" @click="increase"></el-button>
+                  </el-button-group>
                 </div>
               </el-tab-pane>
             </el-tabs>
@@ -97,10 +101,13 @@
 </template>
 
 <script>
+  import '../utils/md5.js';
+
   export default {
     name: "Room",
     data() {
       return {
+        roomUid: '',
         percentage: 10,
         colors: [
           {color: '#f56c6c', percentage: 20},
@@ -108,6 +115,11 @@
           {color: '#5cb87a', percentage: 60},
           {color: '#1989fa', percentage: 80},
           {color: '#6f7ad3', percentage: 100}
+        ],
+        emoji: [
+          '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😛', '👎',
+          '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '🙄', '😣', '😥', '😮', '😫', '😝', '💩',
+          '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '😵', '😡', '😠', '🤬', '😷', '🤮', '🥳',
         ],
         chessBoard: '',
         lineWidth: 34,
@@ -120,12 +132,34 @@
         gameOver: true,
         msg: '',
         asideHidden: false,
-        soundDrawer: false
+        soundDrawer: false,
+        currentUser: this.$store.state.user,
+        isCreater: false,
       }
     },
     methods: {
-      sendMsg() {
+      sendMsg() { //TODO
+        let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
+        if (historyMsg == null) {
+          historyMsg = [];
+          historyMsg.push({})
+        } else {
 
+        }
+        this.$store.state.stomp.send('/ws/game/chat', {}, this.msg + ';');
+        this.msg = '';
+        this.updateChatPanel();
+      },
+      updateChatPanel() { //TODO
+        let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
+        if (historyMsg == null) {
+          this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
+        } else {
+          this.$store.commit('updateRoomMsgList', JSON.parse(historyMsg));
+        }
+      },
+      sendEmoji(emoji) {
+        document.getElementById('input').value += emoji;
       },
       initChessBoard() {
         this.chessBoard = document.getElementById('chessboard');
@@ -210,7 +244,14 @@
       },
       changeSound() {
         this.soundDrawer = !this.soundDrawer;
-      }
+      },
+      genUniqRoomId() {
+        if(this.isCreater) {
+          this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
+          //todo
+          // post request
+        }
+      },
     },
     computed: {
       roomId() {
@@ -225,6 +266,7 @@
     },
     mounted() {
       this.initChessBoard();
+      this.genUniqRoomId();
     }
   }
 </script>
@@ -235,7 +277,8 @@
     margin: 50px auto;
     box-shadow: -2px -2px 2px #F3F2F2, 5px 5px 5px #6F6767;
   }
-  body{
+
+  body {
     background-color: #E9EEF3;
   }
 
@@ -318,19 +361,23 @@
     float: right;
   }
 
-  .sound-dashboard{
+  .emoji-span:hover {
+    cursor: pointer;
+  }
+
+  .sound-dashboard {
     width: 300px;
     height: 126px;
     display: inline;
   }
 
-  .adjust-sound{
+  .adjust-sound {
     width: 130px;
     height: 160px;
     margin-left: 50px;
   }
 
-  .quit{
+  .quit {
     float: left;
     margin-top: 10px;
   }
