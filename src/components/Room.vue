@@ -101,14 +101,18 @@
 </template>
 
 <script>
-  import '../utils/md5.js';
+  import {hex_md5} from "../utils/md5";
 
   export default {
     name: "Room",
     data() {
       return {
         roomUid: '',
+        currentUsersCount: 0,
+        maxUsersCount: 0, //todo
         percentage: 10,
+        chessGame: [], //todo
+        roomMsgList: [],
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -134,7 +138,6 @@
         asideHidden: false,
         soundDrawer: false,
         currentUser: this.$store.state.user,
-        isCreater: false,
       }
     },
     methods: {
@@ -151,15 +154,30 @@
         this.updateChatPanel();
       },
       updateChatPanel() { //TODO
-        let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
-        if (historyMsg == null) {
-          this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
-        } else {
-          this.$store.commit('updateRoomMsgList', JSON.parse(historyMsg));
-        }
+        // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
+        // if (historyMsg == null) {
+        //   this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
+        // } else {
+        //   this.$store.commit('updateRoomMsgList', JSON.parse(historyMsg));
+        // }
       },
       sendEmoji(emoji) {
         document.getElementById('input').value += emoji;
+      },
+      createRoom() {
+        this.postRequest("/room/" + this.roomUid, {}, res => {
+          if (res.data.code === 200) {
+            this.$message({
+              message: '你已成为房主',
+              type: 'success'
+            })
+          }
+        }, err => {
+          this.$message({
+            message: err.data, //todo
+            type: 'error'
+          })
+        });
       },
       initChessBoard() {
         this.chessBoard = document.getElementById('chessboard');
@@ -236,6 +254,11 @@
       },
       quit() {
         this.$confirm("确认退出吗?", "提示", {}).then(() => {
+          if (this.currentUsersCount === 1) {
+            //todo
+            // put request
+            //remove msg
+          }
           this.$router.replace({path: '/home'});
         })
       },
@@ -246,27 +269,41 @@
         this.soundDrawer = !this.soundDrawer;
       },
       genUniqRoomId() {
-        if(this.isCreater) {
+        if (this.currentUsersCount === 0) {
           this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
-          //todo
-          // post request
+          this.createRoom();
         }
+        this.currentUsersCount++;
+        this.maxUsersCount = this.currentUsersCount > this.maxUsersCount ? this.currentUsersCount : this.maxUsersCount;
       },
+      enterRoom() {
+        this.genUniqRoomId();
+        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', msg => { //todo 多人聊天 => 广播
+          console.log(msg.body);
+        }, fail => {
+
+        });
+        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', msg => { //todo 下棋 => 广播
+          console.log(msg.body);
+        }, fail => {
+
+        });
+      }
     },
     computed: {
       roomId() {
         return this.$route.params.roomId
       },
-      roomMsgList() {
-        return this.$store.state.roomMsgList
-      }
+      // roomMsgList() {
+      //   return this.$store.state.roomMsgList
+      // }
     },
     created() {
       document.title = '房间 ' + this.$route.params.roomId
     },
     mounted() {
       this.initChessBoard();
-      this.genUniqRoomId();
+      this.enterRoom();
     }
   }
 </script>

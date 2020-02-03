@@ -20,7 +20,11 @@ module.exports = {
       },
       '/ws/*': {
         target: 'ws://localhost:8081',
-        ws: true
+        // changeOrigin: true,
+        ws: true,
+        // headers: {
+        //   "Connection": "keep-alive"
+        // },
       }
     },
 
