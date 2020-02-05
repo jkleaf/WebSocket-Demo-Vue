@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {Message} from 'element-ui'
 
+// axios.defaults.withCredentials = true;
 //todo request 拦截器
 // axios.interceptors.request.use(config => {
 //   return config;
@@ -23,7 +24,8 @@ import {Message} from 'element-ui'
 //     Message.error({message: '未知错误!'});
 //   }
 // })
-let base = '';
+let base = 'http://localhost:8081';
+// let base='';
 export const postRequestWithToken = (url, params, success, error) => {
   axios({
     method: 'post',
@@ -38,7 +40,7 @@ export const postRequestWithToken = (url, params, success, error) => {
     // }],
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'token': sessionStorage['token']
+      'token': "Bearer "+sessionStorage['token']
     }
   }).then(success).catch(error);
 }
@@ -46,12 +48,12 @@ export const requestWithToken = (url, method, params, success, error) => {
   axios({
     method: method,
     url: `${base}${url}`,
-    params: params,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": "Bearer " + sessionStorage['token']
       // 'token': sessionStorage['token']
-    }
+    },
+    params: params
   }).then(success).catch(error);
 }
 export const requestWithoutToken = (url, method, params, success, error) => {

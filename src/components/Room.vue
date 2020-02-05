@@ -102,7 +102,7 @@
 
 <script>
   import {hex_md5} from "../utils/md5";
-
+  import api from "../utils";
   export default {
     name: "Room",
     data() {
@@ -142,16 +142,17 @@
     },
     methods: {
       sendMsg() { //TODO
-        let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
-        if (historyMsg == null) {
-          historyMsg = [];
-          historyMsg.push({})
-        } else {
-
-        }
-        this.$store.state.stomp.send('/ws/game/chat', {}, this.msg + ';');
-        this.msg = '';
-        this.updateChatPanel();
+        // let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
+        // if (historyMsg == null) {
+        //   historyMsg = [];
+        //   historyMsg.push({})
+        // } else {
+        //
+        // }
+        // this.$store.state.stomp.send('/ws/game/chat', {}, this.msg + ';');
+        // this.msg = '';
+        // this.updateChatPanel();
+        this.$store.state.stomp.send('/ws/sys',{},'fuck you');
       },
       updateChatPanel() { //TODO
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
@@ -165,7 +166,7 @@
         document.getElementById('input').value += emoji;
       },
       createRoom() {
-        this.postRequest("/room/" + this.roomUid, {}, res => {
+        api.postRequest("/room/" + this.roomUid, {}, res => {
           if (res.data.code === 200) {
             this.$message({
               message: '你已成为房主',
@@ -278,16 +279,16 @@
       },
       enterRoom() {
         this.genUniqRoomId();
-        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', msg => { //todo 多人聊天 => 广播
-          console.log(msg.body);
-        }, fail => {
-
-        });
-        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', msg => { //todo 下棋 => 广播
-          console.log(msg.body);
-        }, fail => {
-
-        });
+        // this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', msg => { //todo 多人聊天 => 广播
+        //   console.log(msg.body);
+        // }, fail => {
+        //
+        // });
+        // this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', msg => { //todo 下棋 => 广播
+        //   console.log(msg.body);
+        // }, fail => {
+        //
+        // });
       }
     },
     computed: {

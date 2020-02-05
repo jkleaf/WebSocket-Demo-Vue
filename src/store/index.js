@@ -70,7 +70,7 @@ export default new Vuex.Store({
           // }
         // });
         context.state.stomp.subscribe("/topic/home", msg => { //接收服务端消息推送(定时+系统消息)
-
+          console.log(msg.body);
         });
       }, fail => {
 
