@@ -9,7 +9,7 @@ export default new Vuex.Store({
   state: {
     user: {
       username: '',
-      //password: '', //todo
+      password: '', //todo
     },
     stomp: null,
     roomMsgList: [],
@@ -52,7 +52,7 @@ export default new Vuex.Store({
         //     context.commit('updateRoomMsgList', JSON.parse(historyMsg2));
         //   }
         // });
-        context.state.stomp.subscribe("/topic/game/chess", msg => {
+        context.state.stomp.subscribe("/topic/game/chess", frame => {
 
         });
         // context.state.stomp.subscribe("/user/queue/friend/chat", msg => {
@@ -69,8 +69,8 @@ export default new Vuex.Store({
           //   localStorage.setItem(context.state.user.username + '#' + message.sender, JSON.stringify(historyMsgJson));
           // }
         // });
-        context.state.stomp.subscribe("/topic/home", msg => { //接收服务端消息推送(定时+系统消息)
-          console.log(msg.body);
+        context.state.stomp.subscribe("/topic/home", frame => { //接收服务端消息推送(定时+系统消息)
+          console.log(frame.body);
         });
       }, fail => {
 

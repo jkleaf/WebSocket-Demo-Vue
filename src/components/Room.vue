@@ -103,6 +103,7 @@
 <script>
   import {hex_md5} from "../utils/md5";
   import api from "../utils";
+
   export default {
     name: "Room",
     data() {
@@ -149,10 +150,12 @@
         // } else {
         //
         // }
-        // this.$store.state.stomp.send('/ws/game/chat', {}, this.msg + ';');
+        // const content= msg;
+        const chatMsg = {type: 'CHAT', content: 'fuck you', sender: this.currentUser.username};
+        this.$store.state.stomp.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify(chatMsg));
         // this.msg = '';
         // this.updateChatPanel();
-        this.$store.state.stomp.send('/ws/sys',{},'fuck you');
+        // this.$store.state.stomp.send('/ws/sys', {}, 'fuck you'); //body: JSON
       },
       updateChatPanel() { //TODO
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
@@ -166,7 +169,7 @@
         document.getElementById('input').value += emoji;
       },
       createRoom() {
-        api.postRequest("/room/" + this.roomUid, {}, res => {
+        api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
           if (res.data.code === 200) {
             this.$message({
               message: '你已成为房主',
@@ -261,6 +264,16 @@
             //remove msg
           }
           this.$router.replace({path: '/home'});
+          this.$store.state.stomp.unsubscribe('/topic/' + this.roomUid + '/game/chat', frame => { //todo 多人聊天 => 广播
+            console.log(frame.body);
+          }, fail => {
+
+          });
+          this.$store.state.stomp.unsubscribe('/topic/' + this.roomUid + '/game/chess', frame => { //todo 下棋 => 广播
+            console.log(frame.body);
+          }, fail => {
+
+          });
         })
       },
       hideAside() {
@@ -272,6 +285,7 @@
       genUniqRoomId() {
         if (this.currentUsersCount === 0) {
           this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
+          console.log(this.roomUid);
           this.createRoom();
         }
         this.currentUsersCount++;
@@ -279,16 +293,19 @@
       },
       enterRoom() {
         this.genUniqRoomId();
-        // this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', msg => { //todo 多人聊天 => 广播
-        //   console.log(msg.body);
-        // }, fail => {
-        //
-        // });
-        // this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', msg => { //todo 下棋 => 广播
-        //   console.log(msg.body);
-        // }, fail => {
-        //
-        // });
+        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', frame => { //todo 多人聊天 => 广播
+          console.log(frame.body);
+        }, fail => {
+
+        });
+        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', frame => { //todo 下棋 => 广播
+          console.log(frame.body);
+        }, fail => {
+
+        });
+      },
+      onMessage() { //callback
+
       }
     },
     computed: {

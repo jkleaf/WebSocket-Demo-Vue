@@ -51,7 +51,6 @@ export const requestWithToken = (url, method, params, success, error) => {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": "Bearer " + sessionStorage['token']
-      // 'token': sessionStorage['token']
     },
     params: params
   }).then(success).catch(error);
