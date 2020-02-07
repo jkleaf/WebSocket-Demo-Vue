@@ -12,7 +12,7 @@ export default new Vuex.Store({
       password: '', //todo
     },
     stomp: null,
-    roomMsgList: [],
+    roomMsgList: [], // contains game & chat
 
   },
   mutations: {

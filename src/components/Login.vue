@@ -156,6 +156,7 @@
         verifyImg: '',
         loaded: true,
         // verImgIsCorrect: false,
+        timer: '',
       }
     },
     methods: {
@@ -312,6 +313,10 @@
     },
     mounted() {
       this.getCaptcha();
+      this.timer = setInterval(this.getCaptcha, 1800000);
+    },
+    beforeDestroy() {
+      clearInterval(this.timer);
     }
   }
 </script>

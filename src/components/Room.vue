@@ -27,37 +27,30 @@
                 <p style="display: flex; justify-content:center">
                   <el-tag type="success" size="small">#{{roomId}}号游戏房间闲聊</el-tag>
                 </p>
-                <template v-for="msg in roomMsgList">
-                  <!--发送来的消息-->
-                  <div
-                    style="display: flex;justify-content: flex-start;align-items: center;box-sizing: border-box;">
-                    <!--                    v-if="msg.from==currentFriend.username">-->
-                    <!--                    <img :src="currentFriend.userface" class="userfaceImg">-->
-                    <div
-                      style="display: inline-flex;border-style: solid;border-width: 1px;border-color: #20a0ff;border-radius: 5px;padding: 5px 8px 5px 8px">
-                      {{msg.msg}}
-                    </div>
-                  </div>
-                  <!--发出去的消息-->
-                  <div style="display: flex;justify-content: flex-end;align-items: center;box-sizing: border-box;">
-                    <!--v-if="msg.from!=currentFriend.username"-->
-                    <div
-                      style="display: inline-flex;border-style: solid;border-width: 1px;border-color: #20a0ff;border-radius: 5px;padding: 5px 8px 5px 8px;margin-right: 3px;background-color: #9eea6a">
-                      {{msg.msg}}
-                    </div>
-                    <!--                    <img :src="currentUser.userface" class="userfaceImg">-->
-                  </div>
-                </template>
-                <div style="text-align: left;margin-top: 50px">
-                  <el-input id="input" v-model="msg" placeholder="请输入内容..." size="mini" style="width: 400px;"
+                <div style="height: 200px;">
+                  <ul id="chatPanel" style="height: 200px; overflow-y: scroll;">
+                    <li v-for="msg in chatMsgList" class="chat-message">
+                      <!--                    <i style="background-color: rgb(255, 193, 7);">o</i>-->
+                      <!--                    <img :src=""/>-->
+                      <span style="font-size: 10px; color: #7600ff; font-weight: bold;">
+                      {{msg.sender}}
+                    </span>
+                      <p>
+                        {{msg.content}}
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+                <div style="text-align: left; line-height:0; margin-top: 5px">
+                  <el-input id="input" v-model="inputText" placeholder="请输入内容..." size="mini" style="width: 400px;"
                             type="textarea"
                             autosize></el-input>
                   <!--                  <img src="../assets/smile-wink.png" class="emoji" alt="">-->
                   <!--                  <i class="fa fa-smile-o emoji" aria-hidden="true"></i>-->
                   <!--:disabled="!currentFriend.id"-->
-                  <!--                  <div>-->
+                  <!--                                    <div>-->
                   <el-popover
-                    placement="top-start"
+                    placement="left-start"
                     title="Emoji"
                     width="200px"
                     trigger="click">
@@ -113,7 +106,7 @@
         maxUsersCount: 0, //todo
         percentage: 10,
         chessGame: [], //todo
-        roomMsgList: [],
+        chatMsgList: [],
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -139,6 +132,8 @@
         asideHidden: false,
         soundDrawer: false,
         currentUser: this.$store.state.user,
+        stompClient: this.$store.state.stomp,
+        inputText: '',
       }
     },
     methods: {
@@ -150,14 +145,16 @@
         // } else {
         //
         // }
-        // const content= msg;
-        const chatMsg = {type: 'CHAT', content: 'fuck you', sender: this.currentUser.username};
-        this.$store.state.stomp.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify(chatMsg));
+        const chatMsg = {type: 'CHAT', content: this.inputText, sender: this.currentUser.username};
+        this.stompClient.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify(chatMsg));
         // this.msg = '';
         // this.updateChatPanel();
         // this.$store.state.stomp.send('/ws/sys', {}, 'fuck you'); //body: JSON
+        this.updateChatPanel(chatMsg);
+        this.inputText = '';
       },
-      updateChatPanel() { //TODO
+      updateChatPanel(chatMsg) { //TODO
+        this.chatMsgList.push(chatMsg);
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
         // if (historyMsg == null) {
         //   this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
@@ -166,7 +163,7 @@
         // }
       },
       sendEmoji(emoji) {
-        document.getElementById('input').value += emoji;
+        this.inputText += emoji;
       },
       createRoom() {
         api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
@@ -219,6 +216,7 @@
             }
             _this.me = !_this.me;//下一步白棋
           }
+          this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, "fuck you");
         })
       },
       //todo
@@ -237,6 +235,7 @@
         this.context.fillStyle = g;
         this.context.fill();
         this.context.closePath();
+
       },
       proposeDraw() {
 
@@ -263,17 +262,18 @@
             // put request
             //remove msg
           }
+          //todo rm sub
+          this.stompClient.unsubscribe('/topic/' + this.roomUid + '/game/chat', frame => {
+            // console.log(frame.body);
+          }, fail => {
+
+          });
+          this.stompClient.unsubscribe('/topic/' + this.roomUid + '/game/chess', frame => {
+            // console.log(frame.body);
+          }, fail => {
+
+          });
           this.$router.replace({path: '/home'});
-          this.$store.state.stomp.unsubscribe('/topic/' + this.roomUid + '/game/chat', frame => { //todo 多人聊天 => 广播
-            console.log(frame.body);
-          }, fail => {
-
-          });
-          this.$store.state.stomp.unsubscribe('/topic/' + this.roomUid + '/game/chess', frame => { //todo 下棋 => 广播
-            console.log(frame.body);
-          }, fail => {
-
-          });
         })
       },
       hideAside() {
@@ -293,18 +293,28 @@
       },
       enterRoom() {
         this.genUniqRoomId();
-        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chat', frame => { //todo 多人聊天 => 广播
-          console.log(frame.body);
-        }, fail => {
-
-        });
-        this.$store.state.stomp.subscribe('/topic/' + this.roomUid + '/game/chess', frame => { //todo 下棋 => 广播
-          console.log(frame.body);
-        }, fail => {
+        this.stompClient.connect({}, success => {
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chat', frame => {
+            const msgJson = frame.body;
+            console.log('this.currentUser.username => ' + this.currentUser.username);
+            console.log('msgJson.sender => ' + msgJson.sender);
+            if (this.currentUser.username !== msgJson.sender) {
+              this.updateChatPanel(JSON.parse(msgJson)); //todo get list from redis ...
+            }
+          }, fail => {
+          });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chess', frame => {
+            // console.log(frame.body);
+          }, fail => {
+          });
+        }, failed => {
 
         });
       },
-      onMessage() { //callback
+      onChatMessageReceived() { //callback
+
+      },
+      onChessMessageReceived() {
 
       }
     },
@@ -312,9 +322,14 @@
       roomId() {
         return this.$route.params.roomId
       },
-      // roomMsgList() {
-      //   return this.$store.state.roomMsgList
+      // chatMsgList() {
+      //   return this.$store.state.chatMsgList
       // }
+    },
+    watch: {
+      chatMsgList() {
+        document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
+      }
     },
     created() {
       document.title = '房间 ' + this.$route.params.roomId
@@ -398,7 +413,7 @@
   }
 
   .chat-panel {
-
+    height: 250px;
   }
 
   .emoji {
@@ -444,4 +459,34 @@
   .display-none {
     display: none;
   }
+
+  #chatPanel {
+    list-style-type: none;
+  }
+
+  #chatPanel li {
+    text-align: left;
+    line-height: 1rem;
+    padding: 5px 20px;
+    margin: 0;
+    border-bottom: 1px solid #f4f4f4;
+  }
+
+  .chat-message {
+    line-height: 1.5rem;
+    padding-left: 68px;
+    position: relative;
+  }
+
+  .chat-panel i {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    left: 0;
+    line-height: 32px;
+    display: inline-block;
+    text-align: center;
+    border-radius: 50%;
+  }
+
 </style>
