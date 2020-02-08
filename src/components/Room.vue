@@ -8,7 +8,7 @@
       <el-container>
         <el-main>
           <span></span>
-          <canvas id="chessboard" width="510px" height="510px"></canvas>
+          <canvas id="chessboard" width="510px" height="510px"></canvas> <!--todo dynamically change-->
         </el-main>
         <el-aside width="550px" :class="{'display-none':asideHidden}">
           <div style="height: 200px; border-bottom: 5px dashed #E9EEF3; margin-top: 15px">
@@ -20,6 +20,7 @@
           <div style="height: 60px;">
             <el-button type="warning" class="proposeDraw" @click="proposeDraw">求和</el-button>
             <el-button type="danger" class="undo" @click="undo">悔棋</el-button>
+            <el-button type="primary" class="sente" @click="sente=!sente">先手切换</el-button>
           </div>
           <div class="tabs">
             <el-tabs tab-position="right" type="border-card" style="margin: 0 10px">
@@ -33,8 +34,8 @@
                       <!--                    <i style="background-color: rgb(255, 193, 7);">o</i>-->
                       <!--                    <img :src=""/>-->
                       <span style="font-size: 10px; color: #7600ff; font-weight: bold;">
-                      {{msg.sender}}
-                    </span>
+                        {{msg.sender}}
+                      </span>
                       <p>
                         {{msg.content}}
                       </p>
@@ -89,7 +90,6 @@
         </el-aside>
       </el-container>
     </el-container>
-
   </div>
 </template>
 
@@ -107,6 +107,32 @@
         percentage: 10,
         chessGame: [], //todo
         chatMsgList: [],
+        chessBoard: '',
+        lineWidth: 34,
+        lineHeight: 34,
+        chessBoardWidth: '', //todo 调整棋盘大小
+        chessBoardHeight: '',
+        context: '',
+        chessBox: [],
+        self: true, //todo
+        undoTimes: 1,
+        gameOver: true,
+        msg: '',
+        asideHidden: false,
+        soundDrawer: false,
+        currentUser:
+        this.$store.state.user,
+        currentUsername: sessionStorage['username'],
+        currentUserAvatar: '',
+        stompClient:
+        this.$store.state.stomp,
+        inputText: '',
+        player1: '',
+        player2: '',
+        isP1: false,
+        isP2: false,
+        p1Avatar: this.defaultAvatarUrl,
+        p2Avatar: this.defaultAvatarUrl,
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -119,21 +145,9 @@
           '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '🙄', '😣', '😥', '😮', '😫', '😝', '💩',
           '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '😵', '😡', '😠', '🤬', '😷', '🤮', '🥳',
         ],
-        chessBoard: '',
-        lineWidth: 34,
-        lineHeight: 34,
-        chessBoardWidth: '', //todo 调整棋盘大小
-        chessBoardHeight: '',
-        context: '',
-        chessBox: [],
-        me: true, //todo
-        gameOver: true,
-        msg: '',
-        asideHidden: false,
-        soundDrawer: false,
-        currentUser: this.$store.state.user,
-        stompClient: this.$store.state.stomp,
-        inputText: '',
+        defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+        sente: true,
+
       }
     },
     methods: {
@@ -145,7 +159,7 @@
         // } else {
         //
         // }
-        const chatMsg = {type: 'CHAT', content: this.inputText, sender: this.currentUser.username};
+        const chatMsg = {type: 'CHAT', content: this.inputText, sender: this.currentUsername};
         this.stompClient.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify(chatMsg));
         // this.msg = '';
         // this.updateChatPanel();
@@ -154,7 +168,9 @@
         this.inputText = '';
       },
       updateChatPanel(chatMsg) { //TODO
-        this.chatMsgList.push(chatMsg);
+        if (chatMsg !== '') {
+          this.chatMsgList.push(chatMsg);
+        }
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
         // if (historyMsg == null) {
         //   this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
@@ -203,29 +219,31 @@
         let _this = this;
         //todo
         this.chessBoard.onclick = (e => {
-          let x = e.offsetX;//相对于棋盘左上角的x坐标
-          let y = e.offsetY;//相对于棋盘左上角的y坐标
+          let x = e.offsetX;
+          let y = e.offsetY;
           let i = Math.floor(x / this.lineWidth);
           let j = Math.floor(y / this.lineHeight);
           if (_this.chessBox[i][j] === 0) {
-            _this.oneStep(i, j, _this.me);
-            if (_this.me) {
+            _this.step(i, j, _this.self);
+            if (_this.self) { // self-turn && player1
               _this.chessBox[i][j] = 1;
-            } else {
+            } else { // p2
               _this.chessBox[i][j] = 2;
             }
-            _this.me = !_this.me;//下一步白棋
+            _this.self = !_this.self;//下一步白棋
           }
-          this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, "fuck you");
+          this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify({x: i, y: j})); // i j
         })
       },
       //todo
-      oneStep(i, j, k) {
+      step(i, j, self) {
         this.context.beginPath();
         //todo
-        this.context.arc(15 + i * 30, 15 + j * 30, 13, 0, 2 * Math.PI);//绘制棋子
-        let g = this.context.createRadialGradient(15 + i * 30, 15 + j * 30, 13, 15 + i * 30, 15 + j * 30, 0);//设置渐变
-        if (k) {              //k=true是黑棋，否则是白棋
+        this.context.arc(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13, 0, 2 * Math.PI);//绘制棋子
+        let g = this.context.createRadialGradient(
+          this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13,
+          this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 0); //设置渐变
+        if (self && this.sente) { //todo
           g.addColorStop(0, '#0A0A0A');//黑棋
           g.addColorStop(1, '#636766');
         } else {
@@ -235,13 +253,56 @@
         this.context.fillStyle = g;
         this.context.fill();
         this.context.closePath();
-
       },
       proposeDraw() {
-
+        this.$confirm("确定发起求和吗？", "提示", {}).then(() => {
+          const chessMsg = {
+            type: 'SENTE',
+            content: '玩家' + (this.isP1 ? '1' : '2') + '发起求和',
+            sender: this.currentUsername
+          };
+          this.stompClient.send('', {}, JSON.stringify(chessMsg));
+          this.$loading({
+            lock: true,
+            text: '正在等待对方回应...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+        });
       },
       undo() {
+        if (this.undoTimes === 0) {
+          this.$message({
+            message: '悔棋次数已用尽！',
+            type: 'warning'
+          })
+        }
+        const chessMsg = {
+          type: 'UNDO',
+          content: '玩家' + (this.isP1 ? '1' : '2') + '发起悔棋',
+          sender: this.currentUsername
+        };
+        this.stompClient.send('', {}, JSON.stringify(chessMsg));
+        this.$confirm("确定要悔棋吗？", "提示", {}).then(() => {
+          this.undoTimes--;
+          //todo chessbox
+        });
+      },
+      yield() {
+        this.$confirm("确定要放弃吗？", "提示", {}).then(() => {
+          const chessMsg = {
+            type: 'YIELD',
+            content: '玩家' + (this.isP1 ? '1' : '2') + '放弃',
+            sender: this.currentUsername
+          };
+          this.stompClient.send('', {}, JSON.stringify(chessMsg));
+        });
+      },
+      disableBtns() { //after game start
 
+      },
+      gameover() {
+        // this.gameOver...
       },
       increase() {
         this.percentage += 10;
@@ -257,6 +318,7 @@
       },
       quit() {
         this.$confirm("确认退出吗?", "提示", {}).then(() => {
+          this.sendLeaveMsg();
           if (this.currentUsersCount === 1) {
             //todo
             // put request
@@ -275,6 +337,11 @@
           });
           this.$router.replace({path: '/home'});
         })
+      },
+      sendLeaveMsg() {
+        this.stompClient.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify({
+          type: 'LEAVE', content: '', sender: this.currentUsername
+        }));
       },
       hideAside() {
         this.asideHidden = !this.asideHidden;
@@ -295,11 +362,21 @@
         this.genUniqRoomId();
         this.stompClient.connect({}, success => {
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chat', frame => {
-            const msgJson = frame.body;
-            console.log('this.currentUser.username => ' + this.currentUser.username);
-            console.log('msgJson.sender => ' + msgJson.sender);
-            if (this.currentUser.username !== msgJson.sender) {
-              this.updateChatPanel(JSON.parse(msgJson)); //todo get list from redis ...
+            const msg = JSON.parse(frame.body);
+            console.log('this.currentUser.username => ' + this.currentUsername/*this.currentUser.username*/);
+            console.log('msg.sender => ' + msg.sender);
+            if (msg.type === 'CHAT') {
+              if (this.currentUsername !== msg.sender) {
+                this.updateChatPanel(msg); //todo get list from redis ...
+              }
+            } else if (msg.type === 'JOIN') {
+
+            } else if (msg.type === 'LEAVE') {
+              console.log(msg.sender + ' leave');
+              this.$message({
+                message: msg.sender + '离开了房间',
+                type: 'success',
+              });
             }
           }, fail => {
           });
@@ -316,6 +393,24 @@
       },
       onChessMessageReceived() {
 
+      },
+      setPlayer(option) {
+        if (option === 1 && this.player1 !== '') {
+          this.player1 = this.currentUsername;
+          this.p1Avatar = this.currentUserAvatar;
+        } else if (option === 2 && this.player2 !== '') {
+          this.player2 = this.currentUsername;
+          this.p2Avatar = this.currentUserAvatar;
+        }
+      },
+      rmPlayer(option) { //todo
+        if (option === 1) {
+          this.player1 = '';
+          this.p1Avatar = this.defaultAvatarUrl;
+        } else if (option === 2) {
+          this.player2 = '';
+          this.p2Avatar = this.defaultAvatarUrl;
+        }
       }
     },
     computed: {
@@ -404,6 +499,11 @@
   }
 
   .undo {
+    margin-top: 10px;
+    float: left;
+  }
+
+  .sente {
     margin-top: 10px;
     float: left;
   }
