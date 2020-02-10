@@ -1,6 +1,7 @@
 <template>
   <el-container>
     <el-header style="text-align: right; font-size: 20px; height: 75px">
+      <el-button @click="createRoom" class="create-room">创建房间</el-button>
       <el-badge :value="'99+'" class="item">
         <el-button size="large" @click="openReplyNotification">回复</el-button>
       </el-badge>
@@ -25,21 +26,28 @@
     <el-container>
       <el-aside style="background-color: #d3dce6">
         <el-table
-          :data="tableData"
+          :data="rankingList"
           style="width: 100%"
-          :default-sort="{prop: 'date', order: 'descending'}"
+          :default-sort="{prop: 'score', order: 'descending'}"
           max-height="700"
         >
+          <!--          <el-table-column-->
+          <!--            prop="rank"-->
+          <!--            label="排行"-->
+          <!--            sortable-->
+          <!--            width="150"-->
+          <!--            style="background-color: #d3dce6">-->
+          <!--          </el-table-column>-->
           <el-table-column
-            prop="date"
-            label="日期"
+            prop="username"
+            label="玩家"
             sortable
             width="150"
             style="background-color: #d3dce6">
           </el-table-column>
           <el-table-column
-            prop="name"
-            label="用户名"
+            prop="score"
+            label="积分"
             sortable
             width="150"
             style="background-color: #d3dce6">
@@ -47,8 +55,8 @@
         </el-table>
       </el-aside>
       <el-container>
-        <el-main style="background-color: rgb(238, 241, 246)">
-          <el-row :gutter="20" v-for="i in 11" :key="i">
+        <el-main style="background-color: rgb(238, 241, 246); height: 100vh;">
+          <el-row :gutter="20" v-for="i in rows-1" :key="i">
             <el-col :span="6" v-for="j in 4" :key="j">
               <div class="grid-content bg-purple">
                 <span @click="roomClicked((i-1)*4+j)" class="room-span">Room {{(i-1)*4+j}}</span>
@@ -56,11 +64,19 @@
               </div>
             </el-col>
           </el-row>
+          <el-row :gutter="20">
+            <el-col :span="6" v-for="j in columns" :key="j">
+              <div class="grid-content bg-purple">
+                <span @click="roomClicked(4*(rows-1)+j)" class="room-span">Room {{(rows-1)*4+j}}</span>
+                <!--                <route-link :to="'/room/'+roomId"></route-link>-->
+              </div>
+            </el-col>
+          </el-row>
           <el-pagination
             background
             layout="prev, pager, next"
-            :total="1000">
-          </el-pagination>
+            :total="1000" class="pagination">
+          </el-pagination> <!--TODO-->
         </el-main>
       </el-container>
       <el-drawer
@@ -81,6 +97,7 @@
   export default {
     data() {
       return {
+        stompClient: this.$store.state.stomp,
         roomId: '1',
         user: {
           username: sessionStorage['username'],
@@ -90,58 +107,9 @@
         direction: 'rtl',
         circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
         squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
-        tableData: [{
-          date: '2016-05-02',
-          name: 'Player1',
-        }, {
-          date: '2016-05-04',
-          name: 'Player2',
-        }, {
-          date: '2016-05-01',
-          name: 'Player3',
-        }, {
-          date: '2016-05-03',
-          name: 'Player4',
-        }, {
-          date: '2016-05-06',
-          name: 'Player5',
-        }, {
-          date: '2016-05-07',
-          name: 'Player6',
-        }, {
-          date: '2016-05-09',
-          name: 'Player7',
-        }, {
-          date: '2016-05-11',
-          name: 'Player8',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }, {
-          date: '2016-05-11',
-          name: 'Player0',
-        }],
+        rankingList: [],
+        rows: 6,
+        columns: 2
       }
     },
     methods: {
@@ -152,9 +120,8 @@
         }).then(() => {
           sessionStorage.removeItem("user");
           _this.$router.replace("/");
-        })
-          .catch(() => {
-          });
+        }).catch(() => {
+        });
       },
       openReplyNotification: function () {
         this.$notify.info({
@@ -164,12 +131,39 @@
         });
       },
       roomClicked: function (roomId) {
-        console.log(roomId)
+        console.log(roomId);
         this.$router.push('/room/' + roomId)
       },
       userDetails: function () {//todo
         this.$router.push('/user/info')
+      },
+      ranking() {
+        // this.stompClient.connect({}, success => {
+        //   this.stompClient.subscribe('/topic/ranking', frame => {
+        //     this.rankingList = JSON.parse(frame.body); //ranking({rank,username,score})
+        //   });
+        // }, failed => {
+        //
+        // });
+      },
+      createRoom() {
+        const roomId = this.getCurMaxRoomId();
+        //todo post create room (roomId+1)
+
+        //rows<=11
+        if (roomId % 4 === 0) {
+          this.rows++;
+          this.columns = 1;
+        } else {
+          this.columns++;
+        }
+      },
+      getCurMaxRoomId() { //todo get in real time
+        return 4 * this.rows + this.columns;
       }
+    },
+    mounted() {
+      this.ranking();
     }
   }
 </script>
@@ -197,12 +191,12 @@
   .el-row {
     margin-bottom: 20px;
 
-  &
+  }
+
   :last-child {
     margin-bottom: 0;
   }
 
-  }
   .el-col {
     border-radius: 4px;
   }
@@ -239,5 +233,17 @@
   .room-span:hover {
     cursor: pointer;
     font-size: larger;
+  }
+
+  .create-room {
+    float: left;
+    margin-top: 10px;
+  }
+
+  .pagination {
+    position: absolute;
+    bottom: 10px;
+    margin-left: 25%;
+    margin-top: 10px;
   }
 </style>

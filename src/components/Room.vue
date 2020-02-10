@@ -3,6 +3,8 @@
     <el-container>
       <el-header height="60px">
         <el-button type="info" @click="quit" :disabled="!gameOver" class="quit">退出</el-button>
+        <el-button type="primary" @click="chooseP1" class="quit">选择P1</el-button> <!--Test-->
+        <el-button type="primary" @click="chooseP2" class="quit">选择P2</el-button> <!--Test-->
         <i class="fa fa-align-justify icon-2x collapse-aside" aria-hidden="true" @click="hideAside"></i>
       </el-header>
       <el-container>
@@ -67,7 +69,17 @@
                 </div>
               </el-tab-pane>
               <el-tab-pane label="记录">
-
+                <div style="height: 200px;">
+                  <ul id="chessRecordPanel" style="height: 200px; overflow-y: scroll;">
+                    <li v-for="record in chessRecordList" class="chess-record">
+                      <!--                    <i style="background-color: rgb(255, 193, 7);">o</i>-->
+                      <!--                    <img :src=""/>-->
+                      <span style="font-size: 10px; color: #7600ff; font-weight: bold;">
+                        {{record.player}} : ({{record.x}},{{record.y}})
+                      </span>
+                    </li>
+                  </ul>
+                </div>
               </el-tab-pane>
               <el-tab-pane label="玩家">
 
@@ -105,27 +117,26 @@
         currentUsersCount: 0,
         maxUsersCount: 0, //todo
         percentage: 10,
-        chessGame: [], //todo
+        chessList: [], //todo
         chatMsgList: [],
         chessBoard: '',
+        chessRecordList: [],
         lineWidth: 34,
         lineHeight: 34,
         chessBoardWidth: '', //todo 调整棋盘大小
         chessBoardHeight: '',
         context: '',
         chessBox: [],
-        self: true, //todo
+        selfTurn: false, //todo
         undoTimes: 1,
         gameOver: true,
         msg: '',
         asideHidden: false,
         soundDrawer: false,
-        currentUser:
-        this.$store.state.user,
+        currentUser: this.$store.state.user,
         currentUsername: sessionStorage['username'],
         currentUserAvatar: '',
-        stompClient:
-        this.$store.state.stomp,
+        stompClient: this.$store.state.stomp,
         inputText: '',
         player1: '',
         player2: '',
@@ -146,11 +157,31 @@
           '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '😵', '😡', '😠', '🤬', '😷', '🤮', '🥳',
         ],
         defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-        sente: true,
+        sente: false,
 
       }
     },
     methods: {
+      chooseP1() { //set disabled
+        this.isP1 = true;
+        //todo assume p1 sente
+        this.sente = true;
+        //todo assume init p1's selfTurn true when game start
+        this.selfTurn = true;
+        this.$message({
+          message: '你选择了p1',
+          type: 'success'
+        });
+      },
+      chooseP2() { //set disabled
+        this.isP2 = true;
+        //todo
+        this.sente = false;
+        this.$message({
+          message: '你选择了p2',
+          type: 'success'
+        });
+      },
       sendMsg() { //TODO
         // let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
         // if (historyMsg == null) {
@@ -219,40 +250,65 @@
         let _this = this;
         //todo
         this.chessBoard.onclick = (e => {
-          let x = e.offsetX;
-          let y = e.offsetY;
-          let i = Math.floor(x / this.lineWidth);
-          let j = Math.floor(y / this.lineHeight);
-          if (_this.chessBox[i][j] === 0) {
-            _this.step(i, j, _this.self);
-            if (_this.self) { // self-turn && player1
-              _this.chessBox[i][j] = 1;
-            } else { // p2
-              _this.chessBox[i][j] = 2;
+          if (_this.selfTurn && (_this.isP1 || _this.isP2)) {
+            let x = e.offsetX;
+            let y = e.offsetY;
+            let i = Math.floor(x / this.lineWidth);
+            let j = Math.floor(y / this.lineHeight);
+            if (_this.chessBox[i][j] === 0) {
+              _this.step(i, j, true, this.currentUsername);
+              _this.selfTurn = false;
+              const chessMsg = {
+                type: this.judgeSuccess(i, j) ? 'OVER' : 'COORDINATE',
+                content: JSON.stringify({x: i, y: j}),
+                sender: _this.currentUsername
+              };
+              this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify(chessMsg)); // i j
             }
-            _this.self = !_this.self;//下一步白棋
           }
-          this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify({x: i, y: j})); // i j
         })
       },
-      //todo
-      step(i, j, self) {
+      step(i, j, flag, player) {
+        if (this.isP1) { // p1
+          this.chessBox[i][j] = 1;
+        } else { // p2
+          this.chessBox[i][j] = 2;
+        }
         this.context.beginPath();
         //todo
-        this.context.arc(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13, 0, 2 * Math.PI);//绘制棋子
+        this.context.arc(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13, 0, 2 * Math.PI);
         let g = this.context.createRadialGradient(
           this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13,
-          this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 0); //设置渐变
-        if (self && this.sente) { //todo
-          g.addColorStop(0, '#0A0A0A');//黑棋
-          g.addColorStop(1, '#636766');
+          this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 0);
+        if (flag) {
+          if (this.sente) {
+            g.addColorStop(0, '#0A0A0A');// black
+            g.addColorStop(1, '#636766');
+          } else {
+            g.addColorStop(0, '#D1D1D1');// white
+            g.addColorStop(1, '#F9F9F9');
+          }
         } else {
-          g.addColorStop(0, '#D1D1D1');//白棋
-          g.addColorStop(1, '#F9F9F9');
+          if (!this.sente) {
+            g.addColorStop(0, '#0A0A0A');
+            g.addColorStop(1, '#636766');
+          } else {
+            g.addColorStop(0, '#D1D1D1');
+            g.addColorStop(1, '#F9F9F9');
+          }
         }
         this.context.fillStyle = g;
         this.context.fill();
         this.context.closePath();
+        this.chessList.push({x: i, y: j}); //todo
+        this.chessRecordList.push({
+          player: player,
+          x: i,
+          y: j
+        });
+      },
+      updateRecordPanel(chessRecord) { //todo
+        this.chessRecordList.push(chessRecord);
       },
       proposeDraw() {
         this.$confirm("确定发起求和吗？", "提示", {}).then(() => {
@@ -271,6 +327,7 @@
         });
       },
       undo() {
+        const _this = this;
         if (this.undoTimes === 0) {
           this.$message({
             message: '悔棋次数已用尽！',
@@ -282,10 +339,13 @@
           content: '玩家' + (this.isP1 ? '1' : '2') + '发起悔棋',
           sender: this.currentUsername
         };
-        this.stompClient.send('', {}, JSON.stringify(chessMsg));
+        this.stompClient.send('/ws/' + this.roomUid + '/game/chess', {}, JSON.stringify(chessMsg));
         this.$confirm("确定要悔棋吗？", "提示", {}).then(() => {
           this.undoTimes--;
           //todo chessbox
+          const lastChess = _this.chessList.pop();
+          _this.chessBox[lastChess.x][lastChess.y] = 0;
+          //repaint()
         });
       },
       yield() {
@@ -301,8 +361,43 @@
       disableBtns() { //after game start
 
       },
-      gameover() {
-        // this.gameOver...
+      judgeSuccess(x, y) {
+        const decision = this.chessBox[x][y];
+        let cnt = 1, row = x, col = y;
+        while (--row >= 0 && this.chessBox[row][col] === decision) ++cnt;
+        row = x;
+        while (++row < 15 && this.chessBox[row][col] === decision) ++cnt;
+        if (cnt >= 5) {
+          this.gameover();
+          return true;
+        }
+        cnt = 1, row = x, col = y;
+        while (--col >= 0 && this.chessBox[row][col] === decision) ++cnt;
+        col = y;
+        while (++col < 15 && this.chessBox[row][col] === decision) ++cnt;
+        if (cnt >= 5) {
+          this.gameover();
+          return true;
+        }
+        cnt = 1, row = x, col = y;
+        while (--col >= 0 && --row >= 0 && this.chessBox[row][col] === decision) ++cnt;
+        row = x, col = y;
+        while (++col < 15 && ++row < 15 && this.chessBox[row][col] === decision) ++cnt;
+        if (cnt >= 5) {
+          this.gameover();
+          return true;
+        }
+        cnt = 1, row = x, col = y;
+        while (++row < 15 && --col >= 0 && this.chessBox[row][col] === decision) ++cnt;
+        row = x, col = y;
+        while (--row >= 0 && ++col < 15 && this.chessBox[row][col] === decision) ++cnt;
+        if (cnt >= 5) {
+          this.gameover();
+          return true;
+        }
+      },
+      gameover() { //todo
+        this.gameOver = true;
       },
       increase() {
         this.percentage += 10;
@@ -335,6 +430,7 @@
           }, fail => {
 
           });
+          this.clearRoomInfo();
           this.$router.replace({path: '/home'});
         })
       },
@@ -342,6 +438,9 @@
         this.stompClient.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify({
           type: 'LEAVE', content: '', sender: this.currentUsername
         }));
+      },
+      clearRoomInfo() {
+        //todo
       },
       hideAside() {
         this.asideHidden = !this.asideHidden;
@@ -370,23 +469,61 @@
                 this.updateChatPanel(msg); //todo get list from redis ...
               }
             } else if (msg.type === 'JOIN') {
-
+              console.log(msg.sender + 'join');
             } else if (msg.type === 'LEAVE') {
               console.log(msg.sender + ' leave');
               this.$message({
-                message: msg.sender + '离开了房间',
+                message: (this.currentUsername === msg.sender ? '你' : msg.sender) + '离开了房间',
                 type: 'success',
               });
             }
           }, fail => {
           });
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chess', frame => {
-            // console.log(frame.body);
+            const msg = JSON.parse(frame.body);
+            const content = JSON.parse(msg.content);
+            const isOver = this.declareOver(msg);
+            console.log('selfTurn => ' + this.selfTurn);
+            console.log('over => ' + isOver);
+            if (this.currentUsername !== msg.sender) {
+              if (!this.selfTurn && (this.isP1 || this.isP2)) {
+                this.step(content.x, content.y, false, msg.sender);
+                if (!isOver) {
+                  this.selfTurn = true;
+                  this.$message({
+                    message: '轮到你了',
+                    type: 'success'
+                  })
+                }
+              } else {
+                if (!isOver) {
+                  this.$message({
+                    message: '等待玩家' + msg.sender + '下子',
+                    type: 'success'
+                  })
+                }
+              }
+            }
           }, fail => {
           });
-        }, failed => {
+        }, fail => {
 
         });
+      },
+      declareOver(msg) {
+        if (msg.type === 'OVER') {
+          const winner = msg.sender;
+          if (this.currentUsername !== winner) {
+            this.gameover();
+          }
+          this.$message({
+            message: '游戏结束,玩家' + winner + '取得胜利！',
+            type: 'success'
+          });
+          return true;
+        } else {
+          return false;
+        }
       },
       onChatMessageReceived() { //callback
 
@@ -411,6 +548,9 @@
           this.player2 = '';
           this.p2Avatar = this.defaultAvatarUrl;
         }
+      },
+      render() { //todo
+
       }
     },
     computed: {
@@ -431,7 +571,8 @@
     },
     mounted() {
       this.initChessBoard();
-      this.enterRoom();
+      this.enterRoom(); //todo in hall page
+      this.render();
     }
   }
 </script>
@@ -589,4 +730,21 @@
     border-radius: 50%;
   }
 
+  #chessRecordPanel {
+    list-style-type: none;
+  }
+
+  #chessRecordPanel li {
+    text-align: left;
+    line-height: 1rem;
+    padding: 5px 20px;
+    margin: 0;
+    border-bottom: 1px solid #f4f4f4;
+  }
+
+  .chess-record {
+    line-height: 1.5rem;
+    padding-left: 68px;
+    position: relative;
+  }
 </style>

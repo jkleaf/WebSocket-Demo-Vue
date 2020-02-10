@@ -5,6 +5,9 @@
     <div id="msg">
 
     </div>
+    <div>
+      {{list}}
+    </div>
   </div>
 </template>
 
@@ -13,6 +16,7 @@
     data() {
       return {
         stompClient: Stomp.over(new SockJS("/ws/endpoint")),
+        list: [],
       }
     },
     // name: "Test"
@@ -45,11 +49,23 @@
           })
         });
         // this.stompClient.send("/ws/sys", {}, 'fuck you');
-      }
+      },
+      ranking() {
+        this.stompClient.connect({}, succcess => {
+          this.stompClient.subscribe('/topic/ranking', frame => {
+            this.list=frame.body;
+          }, fail => {
+
+          })
+        }, fail => {
+
+        });
+      },
     },
     mounted() {
       // this.connectUser();
-      this.connectTopic();
+      // this.connectTopic();
+      this.ranking();
     }
   }
 </script>
