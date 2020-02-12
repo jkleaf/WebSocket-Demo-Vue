@@ -3,8 +3,13 @@
     <el-container>
       <el-header height="60px">
         <el-button type="info" @click="quit" :disabled="!gameOver" class="quit">退出</el-button>
-        <el-button type="primary" @click="chooseP1" class="quit">选择P1</el-button> <!--Test-->
-        <el-button type="primary" @click="chooseP2" class="quit">选择P2</el-button> <!--Test-->
+        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">选择P1</el-button>
+        <!--Test-->
+        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">选择P2</el-button>
+        <el-button type="primary" @click="ready" class="quit">P1准备</el-button>
+        <el-button type="primary" @click="ready" class="quit">P2准备</el-button>
+        <el-button type="primary" @click.once="startGame" :disabled="gameStart">{{gameStart?'取消':'开始游戏'}}</el-button>
+        <!--Test-->
         <i class="fa fa-align-justify icon-2x collapse-aside" aria-hidden="true" @click="hideAside"></i>
       </el-header>
       <el-container>
@@ -14,9 +19,9 @@
         </el-main>
         <el-aside width="550px" :class="{'display-none':asideHidden}">
           <div style="height: 200px; border-bottom: 5px dashed #E9EEF3; margin-top: 15px">
-            <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="180"
+            <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="150"
                        style="margin-right: 30px"></el-avatar>
-            <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="180"
+            <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="150"
                        style="margin-left: 30px"></el-avatar>
           </div>
           <div style="height: 60px;">
@@ -75,7 +80,7 @@
                       <!--                    <i style="background-color: rgb(255, 193, 7);">o</i>-->
                       <!--                    <img :src=""/>-->
                       <span style="font-size: 10px; color: #7600ff; font-weight: bold;">
-                        {{record.player}} : ({{record.x}},{{record.y}})
+                        {{record.player}} : ({{record.x}},{{record.y}}) [{{chessBox[record.x][record.y]}}]
                       </span>
                     </li>
                   </ul>
@@ -158,29 +163,63 @@
         ],
         defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
         sente: false,
-
+        winner: '',
+        turn: false,
+        roomOwner: '',
+        gameStart: false,
+        gameReady: false,
       }
     },
     methods: {
       chooseP1() { //set disabled
         this.isP1 = true;
+        this.isP2 = false;
         //todo assume p1 sente
         this.sente = true;
         //todo assume init p1's selfTurn true when game start
         this.selfTurn = true;
-        this.$message({
-          message: '你选择了p1',
-          type: 'success'
-        });
+        this.player1 = this.currentUsername;
+        // this.player2='';
+        const flag = this.player1 === this.player2;
+        this.choosePlayers('1', this.player1);
+        // this.choosePlayers('2','');
       },
       chooseP2() { //set disabled
         this.isP2 = true;
+        this.isP1 = false;
         //todo
         this.sente = false;
-        this.$message({
-          message: '你选择了p2',
-          type: 'success'
-        });
+        this.player2 = this.currentUsername;
+        // this.player1='';
+        const flag = this.player1 === this.player2;
+        this.choosePlayers('2', this.player2);
+        // this.choosePlayers('1','');
+      },
+      ready() { //TODO
+        this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
+          type: 'READY', content: this.currentUsername
+        })
+        this.gameReady = true;
+      },
+      startGame() { //TODO
+        if (this.ready && this.roomOwner === this.currentUsername) {
+          this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
+            type: 'START', content: this.currentUsername
+          })
+          this.gameStart = true;
+        } else {
+          //TODO show no-prepared message or disable the btn then hint owner
+        }
+      },
+      async choosePlayers(player, username) {
+        await this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
+          // type: 'CHOICE',
+          // content: JSON.stringify({
+          player: player,
+          username: username,
+
+          // })
+        }));
       },
       sendMsg() { //TODO
         // let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
@@ -212,9 +251,10 @@
       sendEmoji(emoji) {
         this.inputText += emoji;
       },
-      createRoom() {
+      createRoom() { //TODO
         api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
           if (res.data.code === 200) {
+            this.roomOwner = this.currentUsername;
             this.$message({
               message: '你已成为房主',
               type: 'success'
@@ -269,11 +309,6 @@
         })
       },
       step(i, j, flag, player) {
-        if (this.isP1) { // p1
-          this.chessBox[i][j] = 1;
-        } else { // p2
-          this.chessBox[i][j] = 2;
-        }
         this.context.beginPath();
         //todo
         this.context.arc(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13, 0, 2 * Math.PI);
@@ -281,6 +316,11 @@
           this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13,
           this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 0);
         if (flag) {
+          if (this.isP1) { // p1
+            this.chessBox[i][j] = 1;
+          } else { // p2
+            this.chessBox[i][j] = 2;
+          }
           if (this.sente) {
             g.addColorStop(0, '#0A0A0A');// black
             g.addColorStop(1, '#636766');
@@ -289,6 +329,11 @@
             g.addColorStop(1, '#F9F9F9');
           }
         } else {
+          if (!this.isP1) {
+            this.chessBox[i][j] = 1;
+          } else {
+            this.chessBox[i][j] = 2;
+          }
           if (!this.sente) {
             g.addColorStop(0, '#0A0A0A');
             g.addColorStop(1, '#636766');
@@ -398,6 +443,9 @@
       },
       gameover() { //todo
         this.gameOver = true;
+        // this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
+        //   type: 'FINISH', content: this.winner
+        // })
       },
       increase() {
         this.percentage += 10;
@@ -440,7 +488,10 @@
         }));
       },
       clearRoomInfo() {
-        //todo
+        //todo after room initialized or game finished
+        this.gameOver = false;
+        //this.isP1=''; //if quit
+
       },
       hideAside() {
         this.asideHidden = !this.asideHidden;
@@ -449,7 +500,7 @@
         this.soundDrawer = !this.soundDrawer;
       },
       genUniqRoomId() {
-        if (this.currentUsersCount === 0) {
+        if (this.currentUsersCount === 0) { //TODO check room owner from server
           this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
           console.log(this.roomUid);
           this.createRoom();
@@ -466,10 +517,16 @@
             console.log('msg.sender => ' + msg.sender);
             if (msg.type === 'CHAT') {
               if (this.currentUsername !== msg.sender) {
-                this.updateChatPanel(msg); //todo get list from redis ...
+                this.updateChatPanel(msg); //todo get list from redis or sessionStorage...
               }
             } else if (msg.type === 'JOIN') {
               console.log(msg.sender + 'join');
+              if (this.currentUsername !== msg.sender) {
+                this.$message({
+                  message: msg.sender + '加入了房间',
+                  type: 'success'
+                })
+              }
             } else if (msg.type === 'LEAVE') {
               console.log(msg.sender + ' leave');
               this.$message({
@@ -496,6 +553,8 @@
                   })
                 }
               } else {
+                this.step(content.x, content.y, this.turn, msg.sender);
+                this.turn = !this.turn;
                 if (!isOver) {
                   this.$message({
                     message: '等待玩家' + msg.sender + '下子',
@@ -506,18 +565,62 @@
             }
           }, fail => {
           });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //concurrent & async
+            const choice = JSON.parse(frame.body);
+            if (choice.player === '1') { //clear previous selection
+              if ((choice.username === '' && this.player1 === this.player2) ||
+                (choice.username !== '' && this.player1 === '')) {
+                this.player1 = choice.username;
+              }
+              //this.isP1=false;
+              if (this.player1 !== '') {
+                this.$message({
+                  message: '玩家' + this.player1 + '选择了1P',
+                  type: 'success'
+                });
+              }
+            } else if (choice.player === '2') { //1p send 2 username='' represents 1p choose 1p
+              if ((choice.username === '' && this.player2 === this.player1) ||
+                (choice.username !== '' && this.player2 === '')) { //p1's pre selection is p2
+                this.player2 = choice.username;
+              }
+              if (this.player2 !== '') {
+                this.$message({
+                  message: '玩家' + this.player2 + '选择了2P',
+                  type: 'success'
+                });
+                //this.isP2=false;
+              }
+            }
+          });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
+            const notification = frame.body;
+            //TODO
+            //if(notification==='')
+
+          }, fail => {
+
+          })
         }, fail => {
 
         });
+        // TODO join
+        // this.stompClient.send('/ws/'+this.roomUid+'/topic/game/chat',{},JSON.stringify({
+        //   type: 'JOIN',
+        //   content: '',
+        //   sender: this.currentUsername
+        // }));
       },
       declareOver(msg) {
         if (msg.type === 'OVER') {
           const winner = msg.sender;
-          if (this.currentUsername !== winner) {
+          this.winner = winner;
+          const flag = this.currentUsername !== winner;
+          if (flag) {
             this.gameover();
           }
           this.$message({
-            message: '游戏结束,玩家' + winner + '取得胜利！',
+            message: '游戏结束,' + (flag ? '玩家' + winner : '恭喜你') + '取得了胜利！',
             type: 'success'
           });
           return true;
@@ -563,7 +666,9 @@
     },
     watch: {
       chatMsgList() {
-        document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
+        this.$nextTick(() => {
+          document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
+        })
       }
     },
     created() {
