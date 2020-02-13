@@ -3,11 +3,17 @@
     <el-container>
       <el-header height="60px">
         <el-button type="info" @click="quit" :disabled="!gameOver" class="quit">退出</el-button>
-        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">{{p1Choose?'取消选择':'选择P1'}}</el-button>
+        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">{{p1Choose?'取消选择':'选择P1'}}
+        </el-button>
         <!--Test-->
-        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">{{p2Choose?'取消选择':'选择P2'}}</el-button>
-        <el-button type="primary" @click="readyForP1" :disabled="player1!=currentUsername" class="quit">{{p1Ready?'取消准备':'P1准备'}}</el-button>
-        <el-button type="primary" @click="readyForP2" :disabled="player2!=currentUsername" class="quit">{{p2Ready?'取消准备':'P2准备'}}</el-button>
+        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">{{p2Choose?'取消选择':'选择P2'}}
+        </el-button>
+        <el-button type="primary" @click="readyForP1" :disabled="player1!=currentUsername" class="quit">
+          {{p1Ready?'取消准备':'P1准备'}}
+        </el-button>
+        <el-button type="primary" @click="readyForP2" :disabled="player2!=currentUsername" class="quit">
+          {{p2Ready?'取消准备':'P2准备'}}
+        </el-button>
         <el-button type="primary" @click.once="startGame" :disabled="gameStart">{{gameStart?'取消':'开始游戏'}}</el-button>
         <!--Test-->
         <i class="fa fa-align-justify icon-2x collapse-aside" aria-hidden="true" @click="hideAside"></i>
@@ -118,41 +124,41 @@
     name: "Room",
     data() {
       return {
-        roomUid: sessionStorage['roomUid']? sessionStorage['roomuid']: '',
-        currentUsersCount: sessionStorage['currentUsersCount']? sessionStorage['currentUsersCount']:0,
-        maxUsersCount: sessionStorage['maxUsersCount']? sessionStorage['maxUsersCount']:0, //todo
+        roomUid: sessionStorage['roomUid'] ? sessionStorage['roomuid'] : '',
+        currentUsersCount: sessionStorage['currentUsersCount'] ? parseInt(sessionStorage['currentUsersCount']) : 0,
+        maxUsersCount: sessionStorage['maxUsersCount'] ? parseInt(sessionStorage['maxUsersCount']) : 0, //todo
         percentage: 10,
-        chessList: sessionStorage['chessList']? sessionStorage['chessList']:[], //todo
-        chatMsgList: sessionStorage['chatMsgList']? sessionStorage['chatMsgList']:[],
-        chessBoard: sessionStorage['chessBoard']? sessionStorage['chessBoard']:'',
-        chessRecordList: sessionStorage['chessRecordList']? sessionStorage['chessRecordList']:[],
+        chessList: sessionStorage['chessList'] ? JSON.parse(sessionStorage['chessList']) : [], //todo
+        chatMsgList: sessionStorage['chatMsgList'] ? JSON.parse(sessionStorage['chatMsgList']) : [],
+        chessBoard: '',
+        chessRecordList: sessionStorage['chessRecordList'] ? JSON.parse(sessionStorage['chessRecordList']) : [],
         lineWidth: 34,
         lineHeight: 34,
-        chessBoardWidth: sessionStorage['chessBoardWidth']? sessionStorage['chessBoardWidth']:'', //todo 调整棋盘大小
-        chessBoardHeight: sessionStorage['chessBoardHeight']? sessionStorage['chessBoardHeight']:'',
-        context: sessionStorage['context']? sessionStorage['context']:'',
-        chessBox: sessionStorage['chessBox']? sessionStorage['chessBox']:[],
-        selfTurn: sessionStorage['selfTurn']? sessionStorage['selfTurn']:false, //todo
-        undoTimes: sessionStorage['undoTimes']? sessionStorage['undoTimes']:1,
-        gameOver: sessionStorage['gameOver']? sessionStorage['gameOver']:true,
-        msg: sessionStorage['msg']? sessionStorage['msg']:'',
-        asideHidden: sessionStorage['asideHidden']? sessionStorage['asideHidden']:false,
-        soundDrawer: sessionStorage['soundDrawer']? sessionStorage['soundDrawer']:false,
+        chessBoardWidth: sessionStorage['chessBoardWidth'] ? sessionStorage['chessBoardWidth'] : '', //todo 调整棋盘大小
+        chessBoardHeight: sessionStorage['chessBoardHeight'] ? sessionStorage['chessBoardHeight'] : '',
+        context: '',
+        chessBox: sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) : [],
+        selfTurn: sessionStorage['selfTurn'] ? (sessionStorage['selfTurn']==='true'? true: false) : false, //todo
+        undoTimes: sessionStorage['undoTimes'] ? parseInt(sessionStorage['undoTimes']) : 1,
+        gameOver: sessionStorage['gameOver'] ? (sessionStorage['gameOver']==='true'? true :false) : true,
+        msg: sessionStorage['msg'] ? sessionStorage['msg'] : '',
+        asideHidden: sessionStorage['asideHidden'] ? (sessionStorage['asideHidden']==='true'? true:false) : false,
+        soundDrawer: sessionStorage['soundDrawer'] ? (sessionStorage['soundDrawer']==='true'? true:false) : false,
         currentUser: this.$store.state.user,
         currentUsername: sessionStorage['username'],
         currentUserAvatar: '',
         stompClient: this.$store.state.stomp,
-        inputText: sessionStorage['inputText']? sessionStorage['inputText']:'',
-        player1: sessionStorage['player1']? sessionStorage['player1']:'',
-        player2: sessionStorage['player2']? sessionStorage['player2']:'',
-        isP1: sessionStorage['isP1']? sessionStorage['isP1']:false,
-        isP2: sessionStorage['isP2']? sessionStorage['isP2']:false,
-        p1Avatar: sessionStorage['p1Avatar']? sessionStorage['p1Avatar']:this.defaultAvatarUrl,
-        p2Avatar: sessionStorage['p2Avatar']? sessionStorage['p2Avatar']:this.defaultAvatarUrl,
-        p1Choose: sessionStorage['p1Choose']? sessionStorage['p1Choose']:false,
-        p2Choose: sessionStorage['p2Choose']? sessionStorage['p2Choose']:false,
-        p1Ready: sessionStorage['p1Ready']? sessionStorage['p1Ready']:false,
-        p2Ready: sessionStorage['p2Ready']? sessionStorage['p2Ready']:false,
+        inputText: sessionStorage['inputText'] ? sessionStorage['inputText'] : '',
+        player1: sessionStorage['player1'] ? sessionStorage['player1'] : '',
+        player2: sessionStorage['player2'] ? sessionStorage['player2'] : '',
+        isP1: sessionStorage['isP1'] ? (sessionStorage['isP1']==='true'?true:false) : false,
+        isP2: sessionStorage['isP2'] ? (sessionStorage['isP2']==='true'?true:false) : false,
+        p1Avatar: this.defaultAvatarUrl,
+        p2Avatar: this.defaultAvatarUrl,
+        p1Choose: sessionStorage['p1Choose'] ? (sessionStorage['p1Choose']==='true'?true:false) : false,
+        p2Choose: sessionStorage['p2Choose'] ? (sessionStorage['p2Choose']==='true'?true:false) : false,
+        p1Ready: sessionStorage['p1Ready'] ? (sessionStorage['p1Ready']==='true'?true:false) : false,
+        p2Ready: sessionStorage['p2Ready'] ? (sessionStorage['p2Ready']==='true'?true:false) : false,
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -166,17 +172,18 @@
           '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '😵', '😡', '😠', '🤬', '😷', '🤮', '🥳',
         ],
         defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-        sente: sessionStorage['sente']? sessionStorage['sente']:false,
-        winner: sessionStorage['winner']? sessionStorage['winner']:'',
-        turn: sessionStorage['turn']? sessionStorage['turn']:false,
-        roomOwner: sessionStorage['roomOwner']? sessionStorage['roomOwner']:'',
-        gameStart: sessionStorage['gameStart']? sessionStorage['gameStart']:false,
-        gameReady: sessionStorage['gameReady']? sessionStorage['gameReady']:false,
+        sente: sessionStorage['sente'] ? (sessionStorage['sente']==='true'?true:false) : false,
+        senteBox: sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): [], //todo with chessBox
+        winner: sessionStorage['winner'] ? sessionStorage['winner'] : '',
+        turn: sessionStorage['turn'] ? (sessionStorage['turn']==='true'?true:false) : false,
+        roomOwner: sessionStorage['roomOwner'] ? sessionStorage['roomOwner'] : '',
+        gameStart: sessionStorage['gameStart'] ? (sessionStorage['gameStart']==='true'?true:false) : false,
+        gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady']==='true'?true:false) : false,
       }
     },
     methods: {
       chooseP1() { //set disabled
-        this.p1Choose=!this.p1Choose;
+        this.p1Choose = !this.p1Choose;
         this.isP1 = true;
         this.isP2 = false;
         //todo assume p1 sente
@@ -185,32 +192,45 @@
         this.selfTurn = true;
         this.player1 = this.currentUsername;
         // this.player2='';
+        sessionStorage['selfTurn']=this.selfTurn;
+        sessionStorage['player1']=this.player1;
+        sessionStorage['sente']=this.sente;
+        sessionStorage['isP1']=this.isP1;
+        sessionStorage['isP2']=this.isP2;
+        sessionStorage['p1Choose']=this.p1Choose;
         const flag = this.player1 === this.player2;
-        this.choosePlayers('1', this.player1,this.p1Choose);
+        this.choosePlayers('1', this.player1, this.p1Choose);
         // this.choosePlayers('2','');
       },
       chooseP2() { //set disabled
-        this.p2Choose=!this.p2Choose;
+        this.p2Choose = !this.p2Choose;
         this.isP2 = true;
         this.isP1 = false;
         //todo
         this.sente = false;
         this.player2 = this.currentUsername;
         // this.player1='';
+        sessionStorage['player2']=this.player2;
+        sessionStorage['sente']=this.sente;
+        sessionStorage['isP1']=this.isP1;
+        sessionStorage['isP2']=this.isP2;
+        sessionStorage['p2Choose']=this.p1Choose;
         const flag = this.player1 === this.player2;
-        this.choosePlayers('2', this.player2,this.p2Choose);
+        this.choosePlayers('2', this.player2, this.p2Choose);
         // this.choosePlayers('1','');
       },
-      readyForP1(){
-        this.p1Ready=!this.p1Ready;
+      readyForP1() {
+        this.p1Ready = !this.p1Ready;
         this.ready(this.p1Ready);
+        sessionStorage['p1Ready']=this.p1Ready;
       },
-      readyForP2(){
-        this.p2Ready=!this.p2Ready;
+      readyForP2() {
+        this.p2Ready = !this.p2Ready;
         this.ready(this.p2Ready);
+        sessionStorage['p2Ready']=this.p2Ready;
       },
       ready(ready) { //TODO
-        this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {},JSON.stringify({
+        this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
           type: 'READY',
           content: JSON.stringify({
             ready: ready,
@@ -218,7 +238,7 @@
           })
         }))
       },
-      checkReady(){
+      checkReady() {
         return this.p1Ready && this.p2Ready;
       },
       startGame() { //TODO
@@ -231,12 +251,12 @@
           //TODO show no-prepared message or disable the btn then hint owner
         }
       },
-      async choosePlayers(player, username,confirm) { //TODO cancel
+      async choosePlayers(player, username, confirm) { //TODO cancel
         await this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
           type: 'CHOICE',
           content: JSON.stringify({
             player: player,
-            username:username,
+            username: username,
             confirm: confirm
           })
         }));
@@ -256,10 +276,12 @@
         // this.$store.state.stomp.send('/ws/sys', {}, 'fuck you'); //body: JSON
         this.updateChatPanel(chatMsg);
         this.inputText = '';
+        sessionStorage['inputText']=this.inputText;
       },
       updateChatPanel(chatMsg) { //TODO
         if (chatMsg !== '') {
           this.chatMsgList.push(chatMsg);
+          sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
         }
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
         // if (historyMsg == null) {
@@ -270,11 +292,13 @@
       },
       sendEmoji(emoji) {
         this.inputText += emoji;
+        sessionStorage['inputText']=this.inputText;
       },
       createRoom() { //TODO
         api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
           if (res.data.code === 200) {
             this.roomOwner = this.currentUsername;
+            sessionStorage['roomOwner']=this.roomOwner;
             this.$message({
               message: '你已成为房主',
               type: 'success'
@@ -288,45 +312,73 @@
         });
       },
       initChessBoard() {
-        this.chessBoard = document.getElementById('chessboard');
         this.chessBoardWidth = 15 * this.lineWidth;
         this.chessBoardHeight = 15 * this.lineHeight;
+        this.chessBoard = document.getElementById('chessboard');
         this.context = this.chessBoard.getContext('2d');
-        //todo
-        for (let i = 0; i < 15; i++) {
-          this.chessBox[i] = [];
-          for (let j = 0; j < 15; j++) {
-            this.chessBox[i][j] = 0;
+          //todo
+          for (let i = 0; i < 15; i++) {
+            this.context.moveTo(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2);
+            this.context.lineTo(this.lineWidth / 2 + i * this.lineWidth, this.chessBoardHeight - this.lineHeight / 2);
+            this.context.stroke();
+            this.context.moveTo(this.lineWidth / 2, this.lineHeight / 2 + i * this.lineHeight);
+            this.context.lineTo(this.chessBoardWidth - this.lineWidth / 2, this.lineHeight / 2 + i * this.lineHeight);
+            this.context.stroke();
           }
-        }
-        for (let i = 0; i < 15; i++) {
-          this.context.moveTo(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2);
-          this.context.lineTo(this.lineWidth / 2 + i * this.lineWidth, this.chessBoardHeight - this.lineHeight / 2);
-          this.context.stroke();
-          this.context.moveTo(this.lineWidth / 2, this.lineHeight / 2 + i * this.lineHeight);
-          this.context.lineTo(this.chessBoardWidth - this.lineWidth / 2, this.lineHeight / 2 + i * this.lineHeight);
-          this.context.stroke();
-        }
-        let _this = this;
-        //todo
-        this.chessBoard.onclick = (e => {
-          if (_this.selfTurn && (_this.isP1 || _this.isP2)) {
-            let x = e.offsetX;
-            let y = e.offsetY;
-            let i = Math.floor(x / this.lineWidth);
-            let j = Math.floor(y / this.lineHeight);
-            if (_this.chessBox[i][j] === 0) {
-              _this.step(i, j, true, this.currentUsername);
-              _this.selfTurn = false;
-              const chessMsg = {
-                type: this.judgeSuccess(i, j) ? 'OVER' : 'COORDINATE',
-                content: JSON.stringify({x: i, y: j}),
-                sender: _this.currentUsername
-              };
-              this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify(chessMsg)); // i j
+          let _this = this;
+          //todo
+          this.chessBoard.onclick = (e => {
+            if (_this.selfTurn && (_this.isP1 || _this.isP2)) {
+              let x = e.offsetX;
+              let y = e.offsetY;
+              let i = Math.floor(x / this.lineWidth);
+              let j = Math.floor(y / this.lineHeight);
+              if (_this.chessBox[i][j] === 0) {
+                _this.step(i, j, true, this.currentUsername);
+                _this.selfTurn = false;
+                sessionStorage['selfTurn']=_this.selfTurn;
+                const chessMsg = {
+                  type: this.judgeSuccess(i, j) ? 'OVER' : 'COORDINATE',
+                  content: JSON.stringify({x: i, y: j}),
+                  sender: _this.currentUsername
+                };
+                this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify(chessMsg)); // i j
+              }
             }
+          })
+          if(!sessionStorage['chessBox']){
+            for (let i = 0; i < 15; i++) {
+              this.chessBox[i] = [];
+              this.senteBox[i]=[];
+              for (let j = 0; j < 15; j++) {
+                this.chessBox[i][j] = 0;
+                this.senteBox[i][j]=0;
+              }
+            }
+          }else{
+            this.renderChessBoard();
           }
-        })
+      },
+      renderChessBoard(){
+        for (let i = 0; i < 15; i++) {
+          for (let j = 0; j < 15; j++) {
+            this.context.beginPath();
+            this.context.arc(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13, 0, 2 * Math.PI);
+            let g = this.context.createRadialGradient(
+              this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 13,
+              this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2 + j * this.lineHeight, 0);
+            if(this.senteBox[i][j]===1){
+              g.addColorStop(0, '#0A0A0A');
+              g.addColorStop(1, '#636766');
+            }else if (this.senteBox[i][j]===2) {
+              g.addColorStop(0, '#D1D1D1');
+              g.addColorStop(1, '#F9F9F9');
+            }
+            this.context.fillStyle = g;
+            this.context.fill();
+            this.context.closePath();
+          }
+        }
       },
       step(i, j, flag, player) {
         this.context.beginPath();
@@ -338,26 +390,38 @@
         if (flag) {
           if (this.isP1) { // p1
             this.chessBox[i][j] = 1;
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else { // p2
             this.chessBox[i][j] = 2;
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (this.sente) {
+            this.senteBox[i][j]=1;
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');// black
             g.addColorStop(1, '#636766');
           } else {
+            this.senteBox[i][j]=2;
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');// white
             g.addColorStop(1, '#F9F9F9');
           }
         } else {
           if (!this.isP1) {
             this.chessBox[i][j] = 1;
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else {
             this.chessBox[i][j] = 2;
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (!this.sente) {
+            this.senteBox[i][j]=1;
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');
             g.addColorStop(1, '#636766');
           } else {
+            this.senteBox[i][j]=2;
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');
             g.addColorStop(1, '#F9F9F9');
           }
@@ -371,10 +435,12 @@
           x: i,
           y: j
         });
+        sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
       },
-      updateRecordPanel(chessRecord) { //todo
-        this.chessRecordList.push(chessRecord);
-      },
+      // updateRecordPanel(chessRecord) { //todo
+      //   this.chessRecordList.push(chessRecord);
+      //   sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
+      // },
       proposeDraw() {
         this.$confirm("确定发起求和吗？", "提示", {}).then(() => {
           const chessMsg = {
@@ -410,6 +476,9 @@
           //todo chessbox
           const lastChess = _this.chessList.pop();
           _this.chessBox[lastChess.x][lastChess.y] = 0;
+          _this.senteBox[lastChess.x][lastChess.y] = 0;
+          sessionStorage['chessBox']=JSON.stringify(_this.chessBox);
+          sessionStorage['chessBox']=JSON.stringify(_this.senteBox);
           //repaint()
         });
       },
@@ -466,6 +535,8 @@
         // this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
         //   type: 'FINISH', content: this.winner
         // })
+        sessionStorage['gameOver']=this.gameOver;
+        //TODO post to server
       },
       increase() {
         this.percentage += 10;
@@ -499,6 +570,7 @@
 
           });
           this.clearRoomInfo();
+          //TODO post to server
           this.$router.replace({path: '/home'});
         })
       },
@@ -509,12 +581,17 @@
       },
       clearRoomInfo() {
         //todo after room initialized or game finished
-        this.gameOver = false;
+        // this.gameOver = false;
         //this.isP1=''; //if quit
-
+        const token=sessionStorage['token'];
+        const username=sessionStorage['username'];
+        sessionStorage.clear();
+        sessionStorage['token']=token;
+        sessionStorage['username']=username;
       },
       hideAside() {
         this.asideHidden = !this.asideHidden;
+        sessionStorage['asideHidden']=this.asideHidden;
       },
       changeSound() {
         this.soundDrawer = !this.soundDrawer;
@@ -531,113 +608,119 @@
       enterRoom() {
         this.genUniqRoomId();
         this.stompClient.connect({}, success => {
-            this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chat', frame => {
-              const msg = JSON.parse(frame.body);
-              console.log('this.currentUser.username => ' + this.currentUsername/*this.currentUser.username*/);
-              console.log('msg.sender => ' + msg.sender);
-              if (msg.type === 'CHAT') {
-                if (this.currentUsername !== msg.sender) {
-                  this.updateChatPanel(msg); //todo get list from redis or sessionStorage...
-                }
-              } else if (msg.type === 'JOIN') {
-                console.log(msg.sender + 'join');
-                if (this.currentUsername !== msg.sender) {
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chat', frame => {
+            const msg = JSON.parse(frame.body);
+            console.log('this.currentUser.username => ' + this.currentUsername/*this.currentUser.username*/);
+            console.log('msg.sender => ' + msg.sender);
+            if (msg.type === 'CHAT') {
+              if (this.currentUsername !== msg.sender) {
+                this.updateChatPanel(msg); //todo get list from redis or sessionStorage...
+              }
+            } else if (msg.type === 'JOIN') {
+              console.log(msg.sender + 'join');
+              if (this.currentUsername !== msg.sender) {
+                this.$message({
+                  message: msg.sender + '加入了房间',
+                  type: 'success'
+                })
+              }
+            } else if (msg.type === 'LEAVE') {
+              console.log(msg.sender + ' leave');
+              this.$message({
+                message: (this.currentUsername === msg.sender ? '你' : msg.sender) + '离开了房间',
+                type: 'success',
+              });
+            }
+          }, fail => {
+          });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chess', frame => {
+            const msg = JSON.parse(frame.body);
+            const content = JSON.parse(msg.content);
+            const isOver = this.declareOver(msg);
+            console.log('selfTurn => ' + this.selfTurn);
+            console.log('over => ' + isOver);
+            if (this.currentUsername !== msg.sender) {
+              if (!this.selfTurn && (this.isP1 || this.isP2)) {
+                this.step(content.x, content.y, false, msg.sender);
+                if (!isOver) {
+                  this.selfTurn = true;
+                  sessionStorage['selfTurn']=this.selfTurn;
                   this.$message({
-                    message: msg.sender + '加入了房间',
+                    message: '轮到你了',
                     type: 'success'
                   })
                 }
-              } else if (msg.type === 'LEAVE') {
-                console.log(msg.sender + ' leave');
-                this.$message({
-                  message: (this.currentUsername === msg.sender ? '你' : msg.sender) + '离开了房间',
-                  type: 'success',
-                });
-              }
-            }, fail => {
-            });
-            this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chess', frame => {
-              const msg = JSON.parse(frame.body);
-              const content = JSON.parse(msg.content);
-              const isOver = this.declareOver(msg);
-              console.log('selfTurn => ' + this.selfTurn);
-              console.log('over => ' + isOver);
-              if (this.currentUsername !== msg.sender) {
-                if (!this.selfTurn && (this.isP1 || this.isP2)) {
-                  this.step(content.x, content.y, false, msg.sender);
-                  if (!isOver) {
-                    this.selfTurn = true;
-                    this.$message({
-                      message: '轮到你了',
-                      type: 'success'
-                    })
-                  }
-                } else {
-                  this.step(content.x, content.y, this.turn, msg.sender);
-                  this.turn = !this.turn;
-                  if (!isOver) {
-                    this.$message({
-                      message: '等待玩家' + msg.sender + '下子',
-                      type: 'success'
-                    })
-                  }
+              } else {
+                this.step(content.x, content.y, this.turn, msg.sender);
+                this.turn = !this.turn;
+                sessionStorage['turn']=this.turn;
+                if (!isOver) {
+                  this.$message({
+                    message: '等待玩家' + msg.sender + '下子',
+                    type: 'success'
+                  })
                 }
               }
-            }, fail => {
-            });
-            this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //async
-              const msg = JSON.parse(frame.body);
-              if(msg.type==='CHOICE'){
+            }
+          }, fail => {
+          });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //async
+            const msg = JSON.parse(frame.body);
+            if (msg.type === 'CHOICE') {
               const choice = JSON.parse(msg.content);
               //TODO cancel selection
               if (choice.player === '1') {
                 this.player1 = choice.username;
-                sessionStorage['player1']=this.player1;
-                if(this.player2===choice.username){
-                  this.player2='';
+                // sessionStorage['player1']=this.player1;
+                if (this.player2 === choice.username) {
+                  this.player2 = '';
                 }
-                  this.$message({
-                    message: '玩家' + this.player1 + '选择了1P',
-                    type: 'success'
-                  });
+                this.$message({
+                  message: '玩家' + this.player1 + '选择了1P',
+                  type: 'success'
+                });
               } else if (choice.player === '2') {
                 this.player2 = choice.username;
-                if(this.player1===choice.username){
-                  this.player1='';
+                if (this.player1 === choice.username) {
+                  this.player1 = '';
                 }
-                  this.$message({
-                    message: '玩家' + this.player2 + '选择了2P',
-                    type: 'success'
-                  });
+                this.$message({
+                  message: '玩家' + this.player2 + '选择了2P',
+                  type: 'success'
+                });
               }
-            }else if(msg.type==='READY'){ //p1 || p2
-              const content=JSON.parse(msg.content);
-              if(content.ready==='true'){
-                if(this.player1===content.username){
-                  this.p1Ready=true;
-                }else{
-                  this.p2Ready=true;
+              sessionStorage['player1']=this.player1;
+              sessionStorage['player2']=this.player2;
+            } else if (msg.type === 'READY') { //p1 || p2
+              const content = JSON.parse(msg.content);
+              if (content.ready === 'true') {
+                if (this.player1 === content.username) {
+                  this.p1Ready = true;
+                } else {
+                  this.p2Ready = true;
                 }
-              }else if(content.ready==='false'){
-                if(this.player1===content.username){
-                  this.p1Ready=false;
-                }else{
-                  this.p2Ready=false;
+              } else if (content.ready === 'false') {
+                if (this.player1 === content.username) {
+                  this.p1Ready = false;
+                } else {
+                  this.p2Ready = false;
                 }
               }
+              sessionStorage['p1Ready']=this.p1Ready;
+              sessionStorage['p2Ready']=this.p2Ready;
             }
-            });
-            this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
-              const notification = frame.body;
-              //TODO
-              //if(notification==='')
+          });
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
+            const notification = frame.body;
+            //TODO
+            //if(notification==='')
 
-            }, fail => {
-
-            })
           }, fail => {
 
-          });
+          })
+        }, fail => {
+
+        });
         // TODO join
         // this.stompClient.send('/ws/'+this.roomUid+'/topic/game/chat',{},JSON.stringify({
         //   type: 'JOIN',
@@ -649,6 +732,7 @@
         if (msg.type === 'OVER') {
           const winner = msg.sender;
           this.winner = winner;
+          sessionStorage['winner']=this.winner;
           const flag = this.currentUsername !== winner;
           if (flag) {
             this.gameover();
@@ -672,18 +756,22 @@
         if (option === 1 && this.player1 !== '') {
           this.player1 = this.currentUsername;
           this.p1Avatar = this.currentUserAvatar;
+          sessionStorage['player1']=this.player1;
         } else if (option === 2 && this.player2 !== '') {
           this.player2 = this.currentUsername;
           this.p2Avatar = this.currentUserAvatar;
+          sessionStorage['player2']=this.player2;
         }
       },
       rmPlayer(option) { //todo
         if (option === 1) {
           this.player1 = '';
           this.p1Avatar = this.defaultAvatarUrl;
+          sessionStorage['player1']=this.player1;
         } else if (option === 2) {
           this.player2 = '';
           this.p2Avatar = this.defaultAvatarUrl;
+          sessionStorage['player2']=this.player2;
         }
       },
       render() { //todo
