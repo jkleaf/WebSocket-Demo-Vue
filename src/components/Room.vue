@@ -3,11 +3,11 @@
     <el-container>
       <el-header height="60px">
         <el-button type="info" @click="quit" :disabled="!gameOver" class="quit">退出</el-button>
-        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">选择P1</el-button>
+        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">{{p1Choose?'取消选择':'选择P1'}}</el-button>
         <!--Test-->
-        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">选择P2</el-button>
-        <el-button type="primary" @click="ready" class="quit">P1准备</el-button>
-        <el-button type="primary" @click="ready" class="quit">P2准备</el-button>
+        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">{{p2Choose?'取消选择':'选择P2'}}</el-button>
+        <el-button type="primary" @click="readyForP1" :disabled="player1!=currentUsername" class="quit">{{p1Ready?'取消准备':'P1准备'}}</el-button>
+        <el-button type="primary" @click="readyForP2" :disabled="player2!=currentUsername" class="quit">{{p2Ready?'取消准备':'P2准备'}}</el-button>
         <el-button type="primary" @click.once="startGame" :disabled="gameStart">{{gameStart?'取消':'开始游戏'}}</el-button>
         <!--Test-->
         <i class="fa fa-align-justify icon-2x collapse-aside" aria-hidden="true" @click="hideAside"></i>
@@ -149,6 +149,10 @@
         isP2: false,
         p1Avatar: this.defaultAvatarUrl,
         p2Avatar: this.defaultAvatarUrl,
+        p1Choose: false,
+        p2Choose: false,
+        p1Ready: false,
+        p2Ready: false,
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -172,6 +176,7 @@
     },
     methods: {
       chooseP1() { //set disabled
+        this.p1Choose=!this.p1Choose;
         this.isP1 = true;
         this.isP2 = false;
         //todo assume p1 sente
@@ -181,10 +186,11 @@
         this.player1 = this.currentUsername;
         // this.player2='';
         const flag = this.player1 === this.player2;
-        this.choosePlayers('1', this.player1);
+        this.choosePlayers('1', this.player1,this.p1Choose);
         // this.choosePlayers('2','');
       },
       chooseP2() { //set disabled
+        this.p2Choose=!this.p2Choose;
         this.isP2 = true;
         this.isP1 = false;
         //todo
@@ -192,14 +198,28 @@
         this.player2 = this.currentUsername;
         // this.player1='';
         const flag = this.player1 === this.player2;
-        this.choosePlayers('2', this.player2);
+        this.choosePlayers('2', this.player2,this.p2Choose);
         // this.choosePlayers('1','');
       },
-      ready() { //TODO
-        this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
-          type: 'READY', content: this.currentUsername
-        })
-        this.gameReady = true;
+      readyForP1(){
+        this.p1Ready=!this.p1Ready;
+        this.ready(this.p1Ready);
+      },
+      readyForP2(){
+        this.p2Ready=!this.p2Ready;
+        this.ready(this.p2Ready);
+      },
+      ready(ready) { //TODO
+        this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {},JSON.stringify({
+          type: 'READY',
+          content: JSON.stringify({
+            ready: ready,
+            username: this.currentUsername
+          })
+        }))
+      },
+      checkReady(){
+        return this.p1Ready && this.p2Ready;
       },
       startGame() { //TODO
         if (this.ready && this.roomOwner === this.currentUsername) {
@@ -211,14 +231,14 @@
           //TODO show no-prepared message or disable the btn then hint owner
         }
       },
-      async choosePlayers(player, username) {
+      async choosePlayers(player, username,confirm) { //TODO cancel
         await this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
-          // type: 'CHOICE',
-          // content: JSON.stringify({
-          player: player,
-          username: username,
-
-          // })
+          type: 'CHOICE',
+          content: JSON.stringify({
+            player: player,
+            username:username,
+            confirm: confirm
+          })
         }));
       },
       sendMsg() { //TODO
@@ -565,33 +585,46 @@
             }
           }, fail => {
           });
-          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //concurrent & async
-            const choice = JSON.parse(frame.body);
-            if (choice.player === '1') { //clear previous selection
-              if ((choice.username === '' && this.player1 === this.player2) ||
-                (choice.username !== '' && this.player1 === '')) {
-                this.player1 = choice.username;
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //async
+            const msg = JSON.parse(frame.body);
+            if(msg.type==='CHOICE'){
+            const choice = JSON.parse(msg.content);
+            //TODO cancel selection
+            if (choice.player === '1') {
+              this.player1 = choice.username;
+              if(this.player2===choice.username){
+                this.player2='';
               }
-              //this.isP1=false;
-              if (this.player1 !== '') {
                 this.$message({
                   message: '玩家' + this.player1 + '选择了1P',
                   type: 'success'
                 });
+            } else if (choice.player === '2') {
+              this.player2 = choice.username;
+              if(this.player1===choice.username){
+                this.player1='';
               }
-            } else if (choice.player === '2') { //1p send 2 username='' represents 1p choose 1p
-              if ((choice.username === '' && this.player2 === this.player1) ||
-                (choice.username !== '' && this.player2 === '')) { //p1's pre selection is p2
-                this.player2 = choice.username;
-              }
-              if (this.player2 !== '') {
                 this.$message({
                   message: '玩家' + this.player2 + '选择了2P',
                   type: 'success'
                 });
-                //this.isP2=false;
+            }
+          }else if(msg.type==='READY'){ //p1 || p2
+            const content=JSON.parse(msg.content);
+            if(content.ready==='true'){
+              if(this.player1===content.username){
+                this.p1Ready=true;
+              }else{
+                this.p2Ready=true;
+              }
+            }else if(content.ready==='false'){
+              if(this.player1===content.username){
+                this.p1Ready=false;
+              }else{
+                this.p2Ready=false;
               }
             }
+          }
           });
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
             const notification = frame.body;
