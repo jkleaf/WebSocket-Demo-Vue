@@ -8,6 +8,9 @@
     <div>
       {{list}}
     </div>
+    <div class="">
+      {{a}}
+    </div>
   </div>
 </template>
 
@@ -17,6 +20,7 @@
       return {
         stompClient: Stomp.over(new SockJS("/ws/endpoint")),
         list: [],
+        a: false,
       }
     },
     // name: "Test"
@@ -28,6 +32,7 @@
       send2() {
         const msg = "Fuck You";
         this.stompClient.send("/ws/sys", {}, msg);
+        this.a=!this.a;
       },
       connectUser() {
         this.stompClient.connect({}, success => {
@@ -66,6 +71,11 @@
       // this.connectUser();
       // this.connectTopic();
       this.ranking();
+    },
+    watch:{
+      a(){
+        sessionStorage['a']=this.a;
+      }
     }
   }
 </script>

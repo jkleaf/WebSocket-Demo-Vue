@@ -8,10 +8,10 @@
         <!--Test-->
         <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">{{p2Choose?'取消选择':'选择P2'}}
         </el-button>
-        <el-button type="primary" @click="readyForP1" :disabled="player1!=currentUsername" class="quit">
+        <el-button type="primary" @click="readyForP1" :disabled="player1!==currentUsername" class="quit">
           {{p1Ready?'取消准备':'P1准备'}}
         </el-button>
-        <el-button type="primary" @click="readyForP2" :disabled="player2!=currentUsername" class="quit">
+        <el-button type="primary" @click="readyForP2" :disabled="player2!==currentUsername" class="quit">
           {{p2Ready?'取消准备':'P2准备'}}
         </el-button>
         <el-button type="primary" @click.once="startGame" :disabled="gameStart">{{gameStart?'取消':'开始游戏'}}</el-button>
@@ -138,12 +138,12 @@
         chessBoardHeight: sessionStorage['chessBoardHeight'] ? sessionStorage['chessBoardHeight'] : '',
         context: '',
         chessBox: sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) : [],
-        selfTurn: sessionStorage['selfTurn'] ? (sessionStorage['selfTurn']==='true'? true: false) : false, //todo
+        selfTurn: sessionStorage['selfTurn'] ? (sessionStorage['selfTurn'] === 'true') : false, //todo
         undoTimes: sessionStorage['undoTimes'] ? parseInt(sessionStorage['undoTimes']) : 1,
-        gameOver: sessionStorage['gameOver'] ? (sessionStorage['gameOver']==='true'? true :false) : true,
+        gameOver: sessionStorage['gameOver'] ? (sessionStorage['gameOver'] === 'true') : true,
         msg: sessionStorage['msg'] ? sessionStorage['msg'] : '',
-        asideHidden: sessionStorage['asideHidden'] ? (sessionStorage['asideHidden']==='true'? true:false) : false,
-        soundDrawer: sessionStorage['soundDrawer'] ? (sessionStorage['soundDrawer']==='true'? true:false) : false,
+        asideHidden: sessionStorage['asideHidden'] ? (sessionStorage['asideHidden'] === 'true') : false,
+        soundDrawer: sessionStorage['soundDrawer'] ? (sessionStorage['soundDrawer'] === 'true') : false,
         currentUser: this.$store.state.user,
         currentUsername: sessionStorage['username'],
         currentUserAvatar: '',
@@ -151,14 +151,14 @@
         inputText: sessionStorage['inputText'] ? sessionStorage['inputText'] : '',
         player1: sessionStorage['player1'] ? sessionStorage['player1'] : '',
         player2: sessionStorage['player2'] ? sessionStorage['player2'] : '',
-        isP1: sessionStorage['isP1'] ? (sessionStorage['isP1']==='true'?true:false) : false,
-        isP2: sessionStorage['isP2'] ? (sessionStorage['isP2']==='true'?true:false) : false,
+        isP1: sessionStorage['isP1'] ? (sessionStorage['isP1'] === 'true') : false,
+        isP2: sessionStorage['isP2'] ? (sessionStorage['isP2'] === 'true') : false,
         p1Avatar: this.defaultAvatarUrl,
         p2Avatar: this.defaultAvatarUrl,
-        p1Choose: sessionStorage['p1Choose'] ? (sessionStorage['p1Choose']==='true'?true:false) : false,
-        p2Choose: sessionStorage['p2Choose'] ? (sessionStorage['p2Choose']==='true'?true:false) : false,
-        p1Ready: sessionStorage['p1Ready'] ? (sessionStorage['p1Ready']==='true'?true:false) : false,
-        p2Ready: sessionStorage['p2Ready'] ? (sessionStorage['p2Ready']==='true'?true:false) : false,
+        p1Choose: sessionStorage['p1Choose'] ? (sessionStorage['p1Choose'] === 'true') : false,
+        p2Choose: sessionStorage['p2Choose'] ? (sessionStorage['p2Choose'] === 'true') : false,
+        p1Ready: sessionStorage['p1Ready'] ? (sessionStorage['p1Ready'] === 'true') : false,
+        p2Ready: sessionStorage['p2Ready'] ? (sessionStorage['p2Ready'] === 'true') : false,
         colors: [
           {color: '#f56c6c', percentage: 20},
           {color: '#e6a23c', percentage: 40},
@@ -172,13 +172,13 @@
           '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '😵', '😡', '😠', '🤬', '😷', '🤮', '🥳',
         ],
         defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-        sente: sessionStorage['sente'] ? (sessionStorage['sente']==='true'?true:false) : false,
+        sente: sessionStorage['sente'] ? (sessionStorage['sente'] === 'true') : false,
         senteBox: sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): [], //todo with chessBox
         winner: sessionStorage['winner'] ? sessionStorage['winner'] : '',
-        turn: sessionStorage['turn'] ? (sessionStorage['turn']==='true'?true:false) : false,
+        turn: sessionStorage['turn'] ? (sessionStorage['turn'] === 'true') : false,
         roomOwner: sessionStorage['roomOwner'] ? sessionStorage['roomOwner'] : '',
-        gameStart: sessionStorage['gameStart'] ? (sessionStorage['gameStart']==='true'?true:false) : false,
-        gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady']==='true'?true:false) : false,
+        gameStart: sessionStorage['gameStart'] ? (sessionStorage['gameStart'] === 'true') : false,
+        gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady'] === 'true') : false,
       }
     },
     methods: {
@@ -192,12 +192,12 @@
         this.selfTurn = true;
         this.player1 = this.currentUsername;
         // this.player2='';
-        sessionStorage['selfTurn']=this.selfTurn;
-        sessionStorage['player1']=this.player1;
-        sessionStorage['sente']=this.sente;
-        sessionStorage['isP1']=this.isP1;
-        sessionStorage['isP2']=this.isP2;
-        sessionStorage['p1Choose']=this.p1Choose;
+        // sessionStorage['selfTurn']=this.selfTurn;
+        // sessionStorage['player1']=this.player1;
+        // sessionStorage['sente']=this.sente;
+        // sessionStorage['isP1']=this.isP1;
+        // sessionStorage['isP2']=this.isP2;
+        // sessionStorage['p1Choose']=this.p1Choose;
         const flag = this.player1 === this.player2;
         this.choosePlayers('1', this.player1, this.p1Choose);
         // this.choosePlayers('2','');
@@ -210,11 +210,11 @@
         this.sente = false;
         this.player2 = this.currentUsername;
         // this.player1='';
-        sessionStorage['player2']=this.player2;
-        sessionStorage['sente']=this.sente;
-        sessionStorage['isP1']=this.isP1;
-        sessionStorage['isP2']=this.isP2;
-        sessionStorage['p2Choose']=this.p1Choose;
+        // sessionStorage['player2']=this.player2;
+        // sessionStorage['sente']=this.sente;
+        // sessionStorage['isP1']=this.isP1;
+        // sessionStorage['isP2']=this.isP2;
+        // sessionStorage['p2Choose']=this.p1Choose;
         const flag = this.player1 === this.player2;
         this.choosePlayers('2', this.player2, this.p2Choose);
         // this.choosePlayers('1','');
@@ -222,12 +222,10 @@
       readyForP1() {
         this.p1Ready = !this.p1Ready;
         this.ready(this.p1Ready);
-        sessionStorage['p1Ready']=this.p1Ready;
       },
       readyForP2() {
         this.p2Ready = !this.p2Ready;
         this.ready(this.p2Ready);
-        sessionStorage['p2Ready']=this.p2Ready;
       },
       ready(ready) { //TODO
         this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
@@ -276,12 +274,11 @@
         // this.$store.state.stomp.send('/ws/sys', {}, 'fuck you'); //body: JSON
         this.updateChatPanel(chatMsg);
         this.inputText = '';
-        sessionStorage['inputText']=this.inputText;
       },
       updateChatPanel(chatMsg) { //TODO
         if (chatMsg !== '') {
           this.chatMsgList.push(chatMsg);
-          sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
+          // sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
         }
         // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
         // if (historyMsg == null) {
@@ -292,13 +289,11 @@
       },
       sendEmoji(emoji) {
         this.inputText += emoji;
-        sessionStorage['inputText']=this.inputText;
       },
       createRoom() { //TODO
         api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
           if (res.data.code === 200) {
             this.roomOwner = this.currentUsername;
-            sessionStorage['roomOwner']=this.roomOwner;
             this.$message({
               message: '你已成为房主',
               type: 'success'
@@ -314,8 +309,9 @@
       initChessBoard() {
         this.chessBoardWidth = 15 * this.lineWidth;
         this.chessBoardHeight = 15 * this.lineHeight;
-        this.chessBoard = document.getElementById('chessboard');
-        this.context = this.chessBoard.getContext('2d');
+        // this.$nextTick(()=>{
+          this.chessBoard = document.getElementById('chessboard');
+          this.context = this.chessBoard.getContext('2d');
           //todo
           for (let i = 0; i < 15; i++) {
             this.context.moveTo(this.lineWidth / 2 + i * this.lineWidth, this.lineHeight / 2);
@@ -336,7 +332,7 @@
               if (_this.chessBox[i][j] === 0) {
                 _this.step(i, j, true, this.currentUsername);
                 _this.selfTurn = false;
-                sessionStorage['selfTurn']=_this.selfTurn;
+                // sessionStorage['selfTurn']=_this.selfTurn;
                 const chessMsg = {
                   type: this.judgeSuccess(i, j) ? 'OVER' : 'COORDINATE',
                   content: JSON.stringify({x: i, y: j}),
@@ -345,7 +341,8 @@
                 this.stompClient.send("/ws/" + this.roomUid + "/game/chess", {}, JSON.stringify(chessMsg)); // i j
               }
             }
-          })
+          // });
+        });
           if(!sessionStorage['chessBox']){
             for (let i = 0; i < 15; i++) {
               this.chessBox[i] = [];
@@ -390,38 +387,38 @@
         if (flag) {
           if (this.isP1) { // p1
             this.chessBox[i][j] = 1;
-            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else { // p2
             this.chessBox[i][j] = 2;
-            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (this.sente) {
             this.senteBox[i][j]=1;
-            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');// black
             g.addColorStop(1, '#636766');
           } else {
             this.senteBox[i][j]=2;
-            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');// white
             g.addColorStop(1, '#F9F9F9');
           }
         } else {
           if (!this.isP1) {
             this.chessBox[i][j] = 1;
-            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else {
             this.chessBox[i][j] = 2;
-            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (!this.sente) {
             this.senteBox[i][j]=1;
-            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');
             g.addColorStop(1, '#636766');
           } else {
             this.senteBox[i][j]=2;
-            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');
             g.addColorStop(1, '#F9F9F9');
           }
@@ -435,11 +432,9 @@
           x: i,
           y: j
         });
-        sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
       },
       // updateRecordPanel(chessRecord) { //todo
       //   this.chessRecordList.push(chessRecord);
-      //   sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
       // },
       proposeDraw() {
         this.$confirm("确定发起求和吗？", "提示", {}).then(() => {
@@ -477,8 +472,8 @@
           const lastChess = _this.chessList.pop();
           _this.chessBox[lastChess.x][lastChess.y] = 0;
           _this.senteBox[lastChess.x][lastChess.y] = 0;
-          sessionStorage['chessBox']=JSON.stringify(_this.chessBox);
-          sessionStorage['chessBox']=JSON.stringify(_this.senteBox);
+          // sessionStorage['chessBox']=JSON.stringify(_this.chessBox);
+          // sessionStorage['chessBox']=JSON.stringify(_this.senteBox);
           //repaint()
         });
       },
@@ -535,7 +530,6 @@
         // this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
         //   type: 'FINISH', content: this.winner
         // })
-        sessionStorage['gameOver']=this.gameOver;
         //TODO post to server
       },
       increase() {
@@ -591,7 +585,6 @@
       },
       hideAside() {
         this.asideHidden = !this.asideHidden;
-        sessionStorage['asideHidden']=this.asideHidden;
       },
       changeSound() {
         this.soundDrawer = !this.soundDrawer;
@@ -644,7 +637,7 @@
                 this.step(content.x, content.y, false, msg.sender);
                 if (!isOver) {
                   this.selfTurn = true;
-                  sessionStorage['selfTurn']=this.selfTurn;
+                  // sessionStorage['selfTurn']=this.selfTurn;
                   this.$message({
                     message: '轮到你了',
                     type: 'success'
@@ -653,7 +646,7 @@
               } else {
                 this.step(content.x, content.y, this.turn, msg.sender);
                 this.turn = !this.turn;
-                sessionStorage['turn']=this.turn;
+                // sessionStorage['turn']=this.turn;
                 if (!isOver) {
                   this.$message({
                     message: '等待玩家' + msg.sender + '下子',
@@ -689,8 +682,8 @@
                   type: 'success'
                 });
               }
-              sessionStorage['player1']=this.player1;
-              sessionStorage['player2']=this.player2;
+              // sessionStorage['player1']=this.player1;
+              // sessionStorage['player2']=this.player2;
             } else if (msg.type === 'READY') { //p1 || p2
               const content = JSON.parse(msg.content);
               if (content.ready === 'true') {
@@ -706,8 +699,6 @@
                   this.p2Ready = false;
                 }
               }
-              sessionStorage['p1Ready']=this.p1Ready;
-              sessionStorage['p2Ready']=this.p2Ready;
             }
           });
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
@@ -732,7 +723,6 @@
         if (msg.type === 'OVER') {
           const winner = msg.sender;
           this.winner = winner;
-          sessionStorage['winner']=this.winner;
           const flag = this.currentUsername !== winner;
           if (flag) {
             this.gameover();
@@ -756,22 +746,22 @@
         if (option === 1 && this.player1 !== '') {
           this.player1 = this.currentUsername;
           this.p1Avatar = this.currentUserAvatar;
-          sessionStorage['player1']=this.player1;
+          // sessionStorage['player1']=this.player1;
         } else if (option === 2 && this.player2 !== '') {
           this.player2 = this.currentUsername;
           this.p2Avatar = this.currentUserAvatar;
-          sessionStorage['player2']=this.player2;
+          // sessionStorage['player2']=this.player2;
         }
       },
       rmPlayer(option) { //todo
         if (option === 1) {
           this.player1 = '';
           this.p1Avatar = this.defaultAvatarUrl;
-          sessionStorage['player1']=this.player1;
+          // sessionStorage['player1']=this.player1;
         } else if (option === 2) {
           this.player2 = '';
           this.p2Avatar = this.defaultAvatarUrl;
-          sessionStorage['player2']=this.player2;
+          // sessionStorage['player2']=this.player2;
         }
       },
       render() { //todo
@@ -787,19 +777,107 @@
       // }
     },
     watch: {
+      //TODO watch sessionStorage
       chatMsgList() {
         this.$nextTick(() => {
           document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
-        })
+        });
+        sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
+      },
+      chessList(){
+        // sessionStorage['chessList']=this.chessList;
+      },
+      chessRecordList(){
+        sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
+      },
+      chessBox(){
+        sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+      },
+      selfTurn(){
+        sessionStorage['selfTurn']=this.selfTurn;
+      },
+      undoTimes(){
+        // sessionStorage['undoTimes']=this.undoTimes;
+      },
+      gameOver(){
+        sessionStorage['gameOver']=this.gameOver;
+      },
+      asideHidden(){
+        sessionStorage['asideHidden']=this.asideHidden;
+      },
+      soundDrawer(){
+        sessionStorage['soundDrawer']=this.soundDrawer;
+      },
+      inputText(){
+        sessionStorage['inputText']=this.inputText;
+      },
+      player1(){
+        sessionStorage['player1']=this.player1;
+      },
+      player2(){
+        sessionStorage['player2']=this.player2;
+      },
+      isP1(){
+        sessionStorage['isP1']=this.isP1;
+      },
+      isP2(){
+        sessionStorage['isP2']=this.isP2;
+      },
+      p1Avatar(){
+        sessionStorage['p1Avatar']=this.p1Avatar;
+      },
+      p2Avatar(){
+        sessionStorage['p2Avatar']=this.p2Avatar;
+      },
+      p1Choose(){
+        sessionStorage['p1Choose']=this.p1Choose;
+      },
+      p2Choose(){
+        sessionStorage['p2Choose']=this.p2Choose;
+      },
+      p1Ready(){
+        sessionStorage['p1Ready']=this.p1Ready;
+      },
+      p2Ready(){
+        sessionStorage['p2Ready']=this.p2Ready;
+      },
+      sente(){
+        sessionStorage['sente']=this.sente;
+      },
+      senteBox(){
+        sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+      },
+      winner(){
+        sessionStorage['winner']=this.winner;
+      },
+      turn(){
+        sessionStorage['turn']=this.turn;
+      },
+      roomOwner(){
+        sessionStorage['roomOwner']=this.roomOwner;
+      },
+      gameStart(){
+        sessionStorage['gameStart']=this.gameStart;
+      },
+      gameReady(){
+        sessionStorage['gameReady']=this.gameReady;
       }
     },
     created() {
       document.title = '房间 ' + this.$route.params.roomId
     },
+    updated(){
+      // this.initChessBoard();
+      this.$nextTick(()=>{
+        this.initChessBoard();
+      });
+    },
     mounted() {
-      this.initChessBoard();
-      this.enterRoom(); //todo in hall page
-      this.render();
+      // setTimeout(()=>{
+        // this.initChessBoard();
+        this.enterRoom(); //todo in hall page
+        this.render();
+      // },5000)
     }
   }
 </script>

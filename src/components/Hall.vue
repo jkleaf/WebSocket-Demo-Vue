@@ -94,6 +94,7 @@
 </template>
 
 <script>
+  import api from "../utils";
   export default {
     data() {
       return {
@@ -148,7 +149,14 @@
       },
       createRoom() {
         const roomId = this.getCurMaxRoomId();
-        //todo post create room (roomId+1)
+
+        //todo post create room (roomId+1) (create+cache)
+        api.requestWithToken("/room"+this.roomUid,"post",{},res=>{
+
+        },err=>{
+
+        })
+
 
         //rows<=11
         if (roomId % 4 === 0) {
