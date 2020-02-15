@@ -182,6 +182,13 @@
       }
     },
     methods: {
+      getHistoryData(){
+        this.chessList=sessionStorage['chessList'] ? JSON.parse(sessionStorage['chessList']) : [];
+        this.chatMsgList=sessionStorage['chatMsgList'] ? JSON.parse(sessionStorage['chatMsgList']) : [];
+        this.chessRecordList=sessionStorage['chessRecordList'] ? JSON.parse(sessionStorage['chessRecordList']) : [];
+        this.chessBox=sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) : [];
+        this.senteBox=sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): [];
+      },
       chooseP1() { //set disabled
         this.p1Choose = !this.p1Choose;
         this.isP1 = true;
@@ -241,9 +248,9 @@
       },
       startGame() { //TODO
         if (this.ready && this.roomOwner === this.currentUsername) {
-          this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
+          this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
             type: 'START', content: this.currentUsername
-          })
+          }));
           this.gameStart = true;
         } else {
           //TODO show no-prepared message or disable the btn then hint owner
@@ -260,13 +267,6 @@
         }));
       },
       sendMsg() { //TODO
-        // let historyMsg = localStorage.getItem(this.$store.state.user.username + '#room_all');
-        // if (historyMsg == null) {
-        //   historyMsg = [];
-        //   historyMsg.push({})
-        // } else {
-        //
-        // }
         const chatMsg = {type: 'CHAT', content: this.inputText, sender: this.currentUsername};
         this.stompClient.send('/ws/' + this.roomUid + '/game/chat', {}, JSON.stringify(chatMsg));
         // this.msg = '';
@@ -277,34 +277,20 @@
       },
       updateChatPanel(chatMsg) { //TODO
         if (chatMsg !== '') {
-          this.chatMsgList.push(chatMsg);
-          // sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
-        }
-        // let historyMsg = localStorage.getItem(this.currentUser.username + '#room_all')
-        // if (historyMsg == null) {
-        //   this.$store.commit('updateRoomMsgList', []); //TODO MUST HAVE A ROOM ID TO DISTINGUISH
-        // } else {
-        //   this.$store.commit('updateRoomMsgList', JSON.parse(historyMsg));
-        // }
+          this.chatMsgList.push(chatMsg);         
+        }        
       },
       sendEmoji(emoji) {
         this.inputText += emoji;
       },
       createRoom() { //TODO
-        api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
-          if (res.data.code === 200) {
+        // api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
+        //   if (res.data.code === 200) {
             this.roomOwner = this.currentUsername;
-            this.$message({
-              message: '你已成为房主',
-              type: 'success'
-            })
-          }
-        }, err => {
-          this.$message({
-            message: err.data, //todo
-            type: 'error'
-          })
-        });
+            // this.roomUid=this.$route.params.roomUid;
+            this.roomUid=this.$route.query.roomUid;
+            sessionStorage['roomUid']=this.roomUid;            
+        //   }        
       },
       initChessBoard() {
         this.chessBoardWidth = 15 * this.lineWidth;
@@ -343,7 +329,7 @@
             }
           // });
         });
-          if(!sessionStorage['chessBox']){
+          if(!this.gameStart){
             for (let i = 0; i < 15; i++) {
               this.chessBox[i] = [];
               this.senteBox[i]=[];
@@ -387,38 +373,38 @@
         if (flag) {
           if (this.isP1) { // p1
             this.chessBox[i][j] = 1;
-            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else { // p2
             this.chessBox[i][j] = 2;
-            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (this.sente) {
             this.senteBox[i][j]=1;
-            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');// black
             g.addColorStop(1, '#636766');
           } else {
             this.senteBox[i][j]=2;
-            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');// white
             g.addColorStop(1, '#F9F9F9');
           }
         } else {
           if (!this.isP1) {
             this.chessBox[i][j] = 1;
-            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           } else {
             this.chessBox[i][j] = 2;
-            // sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+            sessionStorage['chessBox']=JSON.stringify(this.chessBox);
           }
           if (!this.sente) {
             this.senteBox[i][j]=1;
-            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#0A0A0A');
             g.addColorStop(1, '#636766');
           } else {
             this.senteBox[i][j]=2;
-            // sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+            sessionStorage['senteBox']=JSON.stringify(this.senteBox);
             g.addColorStop(0, '#D1D1D1');
             g.addColorStop(1, '#F9F9F9');
           }
@@ -472,8 +458,8 @@
           const lastChess = _this.chessList.pop();
           _this.chessBox[lastChess.x][lastChess.y] = 0;
           _this.senteBox[lastChess.x][lastChess.y] = 0;
-          // sessionStorage['chessBox']=JSON.stringify(_this.chessBox);
-          // sessionStorage['chessBox']=JSON.stringify(_this.senteBox);
+          sessionStorage['chessBox']=JSON.stringify(_this.chessBox);
+          sessionStorage['chessBox']=JSON.stringify(_this.senteBox);
           //repaint()
         });
       },
@@ -526,11 +512,8 @@
         }
       },
       gameover() { //todo
-        this.gameOver = true;
-        // this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {
-        //   type: 'FINISH', content: this.winner
-        // })
-        //TODO post to server
+        this.gameOver = true;        
+        //TODO post to server        
       },
       increase() {
         this.percentage += 10;
@@ -565,6 +548,11 @@
           });
           this.clearRoomInfo();
           //TODO post to server
+          api.requestWithToken("/room/leave/"+this.roomUid,"delete",{},res=>{
+            console.log(res.data);            
+          },err=>{
+
+          });
           this.$router.replace({path: '/home'});
         })
       },
@@ -591,15 +579,14 @@
       },
       genUniqRoomId() {
         if (this.currentUsersCount === 0) { //TODO check room owner from server
-          this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
-          console.log(this.roomUid);
+          // this.roomUid = hex_md5(Date.now()) + '$' + this.$route.params.roomId;
+          // console.log(this.roomUid);
           this.createRoom();
         }
         this.currentUsersCount++;
         this.maxUsersCount = this.currentUsersCount > this.maxUsersCount ? this.currentUsersCount : this.maxUsersCount;
       },
-      enterRoom() {
-        this.genUniqRoomId();
+      enterRoom() {        
         this.stompClient.connect({}, success => {
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/chat', frame => {
             const msg = JSON.parse(frame.body);
@@ -616,6 +603,7 @@
                   message: msg.sender + '加入了房间',
                   type: 'success'
                 })
+                this.currentUsersCount++;
               }
             } else if (msg.type === 'LEAVE') {
               console.log(msg.sender + ' leave');
@@ -702,22 +690,27 @@
             }
           });
           this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
-            const notification = frame.body;
+            const notification = JSON.parse(frame.body);
             //TODO
-            //if(notification==='')
+            if(notification.type==='START'){
+              this.gameStart=true;
+            }/* else if(notification.type==='FINISH'){
 
+            } */
+            
           }, fail => {
 
-          })
+          });
+          // TODO join
+        this.stompClient.send('/ws/'+this.roomUid+'/topic/game/chat',{},JSON.stringify({
+          type: 'JOIN',
+          content: '',
+          sender: this.currentUsername
+        }));
         }, fail => {
 
         });
-        // TODO join
-        // this.stompClient.send('/ws/'+this.roomUid+'/topic/game/chat',{},JSON.stringify({
-        //   type: 'JOIN',
-        //   content: '',
-        //   sender: this.currentUsername
-        // }));
+        this.genUniqRoomId();     
       },
       declareOver(msg) {
         if (msg.type === 'OVER') {
@@ -753,7 +746,7 @@
           // sessionStorage['player2']=this.player2;
         }
       },
-      rmPlayer(option) { //todo
+      cancelPlayer(option) { //todo
         if (option === 1) {
           this.player1 = '';
           this.p1Avatar = this.defaultAvatarUrl;
@@ -781,18 +774,22 @@
       chatMsgList() {
         this.$nextTick(() => {
           document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
-        });
-        // sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
+          sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
+        });        
       },
-      /*chessList(){
-        sessionStorage['chessList']=this.chessList;
+      chessList(){
+        this.$nextTick(()=>{
+          sessionStorage['chessList']=JSON.stringify(this.chessList);
+        })        
       },
       chessRecordList(){
         sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
       },
-      chessBox(){
-        sessionStorage['chessBox']=JSON.stringify(this.chessBox);
-      }, */
+      // chessBox(){
+      //   // this.$nextTick(()=>{
+      //     sessionStorage['chessBox']=JSON.stringify(this.chessBox);
+      //   // });
+      // },
       selfTurn(){
         sessionStorage['selfTurn']=this.selfTurn;
       },
@@ -823,15 +820,15 @@
       isP2(){
         sessionStorage['isP2']=this.isP2;
       },
-      p1Avatar(){
+      /* p1Avatar(){
         sessionStorage['p1Avatar']=this.p1Avatar;
       },
-     /*  p2Avatar(){
+       p2Avatar(){
         sessionStorage['p2Avatar']=this.p2Avatar;
-      },
+      }, */
       p1Choose(){
         sessionStorage['p1Choose']=this.p1Choose;
-      }, */
+      },
       p2Choose(){
         sessionStorage['p2Choose']=this.p2Choose;
       },
@@ -844,9 +841,9 @@
       sente(){
         sessionStorage['sente']=this.sente;
       },
-      /* senteBox(){
-        sessionStorage['senteBox']=JSON.stringify(this.senteBox);
-      }, */
+      // senteBox(){
+      //   sessionStorage['senteBox']=JSON.stringify(this.senteBox);
+      // },
       winner(){
         sessionStorage['winner']=this.winner;
       },
@@ -877,6 +874,7 @@
 
       // });
       // setTimeout(()=>{
+        this.getHistoryData();
         this.initChessBoard();
         this.enterRoom(); //todo in hall page
         this.render();

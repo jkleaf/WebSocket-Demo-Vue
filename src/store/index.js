@@ -32,43 +32,11 @@ export default new Vuex.Store({
     connect(context) {
       context.state.stomp = Stomp.over(new SockJS("/ws/endpoint"));
       context.state.stomp.connect({}, success => { //全局
-        // context.state.stomp.subscribe("/topic/game/chat", msg => {
-        //   let message = JSON.parse(msg.body);
-        //   let historyMsg = localStorage.getItem(message.sender + '#room_all');
-        //   if (historyMsg == null) {
-        //     historyMsg = [];
-        //     historyMsg.push(message);
-        //     localStorage.setItem(message.sender + '#room_all', JSON.stringify(historyMsg));
-        //   } else {
-        //     let historyMsgJson = JSON.parse(historyMsg);
-        //     historyMsgJson.push(message);
-        //     localStorage.setItem(message.sender + '#room_all', JSON.stringify(historyMsgJson));
-        //   }
-        //
-        //   let historyMsg2 = localStorage.getItem(message.sender + '#room_all');
-        //   if (historyMsg2 == null) {
-        //     context.commit('updateRoomMsgList', []);
-        //   } else {
-        //     context.commit('updateRoomMsgList', JSON.parse(historyMsg2));
-        //   }
-        // });
+        
         context.state.stomp.subscribe("/topic/game/chess", frame => {
 
         });
-        // context.state.stomp.subscribe("/user/queue/friend/chat", msg => {
-          // console.log("/user/queue/friend/chat => "+msg.body);
-          // let message = JSON.parse(msg.body);
-          // let historyMsg = localStorage.getItem(context.state.user.username + '#' + message.sender);
-          // if (historyMsg == null) {
-          //   historyMsg = [];
-          //   historyMsg.push(message);
-          //   localStorage.setItem(context.state.user.username + '#' + message.sender, JSON.stringify(historyMsg));
-          // } else {
-          //   let historyMsgJson = JSON.parse(historyMsg);
-          //   historyMsgJson.push(message);
-          //   localStorage.setItem(context.state.user.username + '#' + message.sender, JSON.stringify(historyMsgJson));
-          // }
-        // });
+        
         context.state.stomp.subscribe("/topic/home", frame => { //接收服务端消息推送(定时+系统消息)
           console.log(frame.body);
         });

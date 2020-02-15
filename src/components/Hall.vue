@@ -6,7 +6,7 @@
         <el-button size="large" @click="openReplyNotification">回复</el-button>
       </el-badge>
       <el-badge :value="2" class="item" type="primary">
-        <el-button size="large" @click="">系统消息</el-button>
+        <el-button size="large" @click>系统消息</el-button>
       </el-badge>
       <el-dropdown>
         <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -43,15 +43,15 @@
             label="玩家"
             sortable
             width="150"
-            style="background-color: #d3dce6">
-          </el-table-column>
+            style="background-color: #d3dce6"
+          ></el-table-column>
           <el-table-column
             prop="score"
             label="积分"
             sortable
             width="150"
-            style="background-color: #d3dce6">
-          </el-table-column>
+            style="background-color: #d3dce6"
+          ></el-table-column>
         </el-table>
       </el-aside>
       <el-container>
@@ -72,17 +72,11 @@
               </div>
             </el-col>
           </el-row>
-          <el-pagination
-            background
-            layout="prev, pager, next"
-            :total="1000" class="pagination">
-          </el-pagination> <!--TODO-->
+          <el-pagination background layout="prev, pager, next" :total="1000" class="pagination"></el-pagination>
+          <!--TODO-->
         </el-main>
       </el-container>
-      <el-drawer
-        title="个人信息"
-        :visible.sync="drawer"
-        :direction="direction">
+      <el-drawer title="个人信息" :visible.sync="drawer" :direction="direction">
         <div>
           <span @click="userDetails">查看详细信息</span>
         </div>
@@ -94,164 +88,227 @@
 </template>
 
 <script>
-  import api from "../utils";
-  export default {
-    data() {
-      return {
-        stompClient: this.$store.state.stomp,
-        roomId: '1',
-        user: {
-          username: sessionStorage['username'],
-          //todo
-        },
-        drawer: false,
-        direction: 'rtl',
-        circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
-        squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
-        rankingList: [],
-        rows: 6,
-        columns: 2
-      }
-    },
-    methods: {
-      logout: function () {
-        const _this = this;
-        this.$confirm("确认退出吗?", "提示", {
-          //type: 'warning'
-        }).then(() => {
+import api from "../utils";
+import { hex_md5 } from "../utils/md5";
+export default {
+  data() {
+    return {
+      stompClient: this.$store.state.stomp,
+      user: {
+        username: sessionStorage["username"]
+        //todo
+      },
+      drawer: false,
+      direction: "rtl",
+      circleUrl:
+        "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+      squareUrl:
+        "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
+      rankingList: [],
+      rows: 6,
+      columns: 2,
+      curRoomsCount: 0,
+      roomUid: "",
+      roomId: ""
+    };
+  },
+  methods: {
+    logout: function() {
+      const _this = this;
+      this.$confirm("确认退出吗?", "提示", {
+        //type: 'warning'
+      })
+        .then(() => {
           sessionStorage.removeItem("user");
           _this.$router.replace("/");
-        }).catch(() => {
-        });
-      },
-      openReplyNotification: function () {
-        this.$notify.info({
-          title: '消息',
-          message: this.$createElement('i', {style: 'color: teal'}, '哦吼！你有一条未读新消息'),
-          position: 'bottom-right'
-        });
-      },
-      roomClicked: function (roomId) {
-        console.log(roomId);
-        this.$router.push('/room/' + roomId)
-      },
-      userDetails: function () {//todo
-        this.$router.push('/user/info')
-      },
-      ranking() {
-        // this.stompClient.connect({}, success => {
-        //   this.stompClient.subscribe('/topic/ranking', frame => {
-        //     this.rankingList = JSON.parse(frame.body); //ranking({rank,username,score})
-        //   });
-        // }, failed => {
-        //
-        // });
-      },
-      createRoom() {
-        const roomId = this.getCurMaxRoomId();
-
-        //todo post create room (roomId+1) (create+cache)
-        api.requestWithToken("/room"+this.roomUid,"post",{},res=>{
-
-        },err=>{
-
         })
-
-
-        //rows<=11
-        if (roomId % 4 === 0) {
-          this.rows++;
-          this.columns = 1;
-        } else {
-          this.columns++;
-        }
-      },
-      getCurMaxRoomId() { //todo get in real time
-        return 4 * this.rows + this.columns;
-      }
+        .catch(() => {});
     },
-    mounted() {
-      this.ranking();
+    openReplyNotification: function() {
+      this.$notify.info({
+        title: "消息",
+        message: this.$createElement(
+          "i",
+          { style: "color: teal" },
+          "哦吼！你有一条未读新消息"
+        ),
+        position: "bottom-right"
+      });
+    },
+    roomClicked: function(roomId) { //TODO check owner and roomUid
+      console.log(roomId);
+      api.requestWithToken("/room/"+roomId,"get",{},res=>{  //get Room Info
+        if(res.data.code===200){
+          //...
+          this.$router.push("/room/" + roomId);
+        }
+      },err=>{
+
+      })
+      
+    },
+    userDetails: function() {
+      //todo
+      this.$router.push("/user/info");
+    },
+    ranking() {
+      // this.stompClient.connect({}, success => {
+      //   this.stompClient.subscribe('/topic/ranking', frame => {
+      //     this.rankingList = JSON.parse(frame.body); //ranking({rank,username,score})
+      //   });
+      // }, failed => {
+      //
+      // });
+    },
+    createRoom() {
+      // const roomId = this.getCurMaxRoomId();
+      this.genUniqRoomId();
+      //todo post create room (roomId+1) (create+cache)
+    },
+    genUniqRoomId() {
+      //todo get in real time
+      api.requestWithToken(
+        "/room/cur/count",
+        "get",
+        {},
+        res => {
+          if (res.data.code === 200) {
+            console.log(res.data);
+            this.curRoomsCount = parseInt(res.data.data);
+            this.roomId = (this.curRoomsCount + 1).toString();
+            // this.curRoomsCount = 10;
+            this.roomUid = hex_md5(Date.now().toString()) + "$" + this.roomId;
+            console.log(this.roomUid);
+            api.requestWithToken(
+              "/room/" + this.roomUid,
+              "post",
+              {
+                roomStatus: "EMPTY"
+              },
+              res => {
+                console.log(res.data);
+                if (res.data.code === 200) {
+                  //rows<=11
+                  if (this.roomId % 4 === 0) {
+                    this.rows++;
+                    this.columns = 1;
+                  } else {
+                    this.columns++;
+                  }
+                  this.$message({
+                    message: "你已成为房主",
+                    type: "success"
+                  });
+                  this.$router.replace({
+                    path: "/room/" + this.roomId,
+                    query: { roomUid: this.roomUid }
+                  });
+                } else {
+                }
+              },
+              err => {
+                this.$message({
+                  message: err.data,
+                  type: "error"
+                });
+              }
+            );
+          }
+        },
+        err => {}
+      );
+      // return 4 * this.rows + this.columns;
     }
+    // genUniqRoomId() {
+    //     // if (this.currentUsersCount === 0) { //TODO check room owner from server
+    //       this.roomUid = hex_md5(Date.now()) + '$' + this.curRoomsCount;
+    //       console.log(this.roomUid);
+    //     // }
+    //     // this.currentUsersCount++;
+    //     // this.maxUsersCount = this.currentUsersCount > this.maxUsersCount ? this.currentUsersCount : this.maxUsersCount;
+    //   },
+  },
+  mounted() {
+    this.ranking();
   }
+};
 </script>
 
 <style scoped>
-  .el-header {
-    background-color: #B3C0D1;
-    color: #333;
-    line-height: 60px;
-  }
+.el-header {
+  background-color: #b3c0d1;
+  color: #333;
+  line-height: 60px;
+}
 
-  .el-aside {
-    color: #333;
-  }
+.el-aside {
+  color: #333;
+}
 
-  .item {
-    margin-top: 10px;
-    margin-right: 60px;
-  }
+.item {
+  margin-top: 10px;
+  margin-right: 60px;
+}
 
-  .me:hover {
-    cursor: pointer;
-  }
+.me:hover {
+  cursor: pointer;
+}
 
-  .el-row {
-    margin-bottom: 20px;
+.el-row {
+  margin-bottom: 20px;
+}
 
-  }
+:last-child {
+  margin-bottom: 0;
+}
 
-  :last-child {
-    margin-bottom: 0;
-  }
+.el-col {
+  border-radius: 4px;
+}
 
-  .el-col {
-    border-radius: 4px;
-  }
+.bg-purple-dark {
+  background: #99a9bf;
+}
 
-  .bg-purple-dark {
-    background: #99a9bf;
-  }
+.bg-purple {
+  background: #d3dce6;
+}
 
-  .bg-purple {
-    background: #d3dce6;
-  }
+.bg-purple-light {
+  background: #e5e9f2;
+}
 
-  .bg-purple-light {
-    background: #e5e9f2;
-  }
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
+  text-align: center;
+  vertical-align: middle;
+}
 
-  .grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-    text-align: center;
-    vertical-align: middle;
-  }
+.row-bg {
+  padding: 10px 0;
+  background-color: #f9fafc;
+}
 
-  .row-bg {
-    padding: 10px 0;
-    background-color: #f9fafc;
-  }
+.el-icon-setting:before {
+  content: "\E6CA";
+  font-size: x-large;
+}
 
-  .el-icon-setting:before {
-    content: "\E6CA";
-    font-size: x-large;
-  }
+.room-span:hover {
+  cursor: pointer;
+  font-size: larger;
+}
 
-  .room-span:hover {
-    cursor: pointer;
-    font-size: larger;
-  }
+.create-room {
+  float: left;
+  margin-top: 10px;
+}
 
-  .create-room {
-    float: left;
-    margin-top: 10px;
-  }
-
-  .pagination {
-    position: absolute;
-    bottom: 10px;
-    margin-left: 25%;
-    margin-top: 10px;
-  }
+.pagination {
+  position: absolute;
+  bottom: 10px;
+  margin-left: 25%;
+  margin-top: 10px;
+}
 </style>
