@@ -128,22 +128,22 @@
         currentUsersCount: sessionStorage['currentUsersCount'] ? parseInt(sessionStorage['currentUsersCount']) : 0,
         maxUsersCount: sessionStorage['maxUsersCount'] ? parseInt(sessionStorage['maxUsersCount']) : 0, //todo
         percentage: 10,
-        chessList: sessionStorage['chessList'] ? JSON.parse(sessionStorage['chessList']) : [], //todo
-        chatMsgList: sessionStorage['chatMsgList'] ? JSON.parse(sessionStorage['chatMsgList']) : [],
+        chessList: /* sessionStorage['chessList'] ? JSON.parse(sessionStorage['chessList']) :  */[], //todo
+        chatMsgList: /* sessionStorage['chatMsgList'] ? JSON.parse(sessionStorage['chatMsgList']) : */ [],
         chessBoard: '',
-        chessRecordList: sessionStorage['chessRecordList'] ? JSON.parse(sessionStorage['chessRecordList']) : [],
+        chessRecordList: /* sessionStorage['chessRecordList'] ? JSON.parse(sessionStorage['chessRecordList']) :  */[],
         lineWidth: 34,
         lineHeight: 34,
-        chessBoardWidth: sessionStorage['chessBoardWidth'] ? sessionStorage['chessBoardWidth'] : '', //todo 调整棋盘大小
-        chessBoardHeight: sessionStorage['chessBoardHeight'] ? sessionStorage['chessBoardHeight'] : '',
+        chessBoardWidth: /* sessionStorage['chessBoardWidth'] ? sessionStorage['chessBoardWidth'] : */ '', //todo 调整棋盘大小
+        chessBoardHeight: /* sessionStorage['chessBoardHeight'] ? sessionStorage['chessBoardHeight'] :  */'',
         context: '',
-        chessBox: sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) : [],
+        chessBox: /* sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) :  */[],
         selfTurn: sessionStorage['selfTurn'] ? (sessionStorage['selfTurn'] === 'true') : false, //todo
         undoTimes: sessionStorage['undoTimes'] ? parseInt(sessionStorage['undoTimes']) : 1,
         gameOver: sessionStorage['gameOver'] ? (sessionStorage['gameOver'] === 'true') : true,
-        msg: sessionStorage['msg'] ? sessionStorage['msg'] : '',
+        msg: /* sessionStorage['msg'] ? sessionStorage['msg'] :  */'',
         asideHidden: sessionStorage['asideHidden'] ? (sessionStorage['asideHidden'] === 'true') : false,
-        soundDrawer: sessionStorage['soundDrawer'] ? (sessionStorage['soundDrawer'] === 'true') : false,
+        soundDrawer: /* sessionStorage['soundDrawer'] ? (sessionStorage['soundDrawer'] === 'true') :  */false,
         currentUser: this.$store.state.user,
         currentUsername: sessionStorage['username'],
         currentUserAvatar: '',
@@ -173,7 +173,7 @@
         ],
         defaultAvatarUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
         sente: sessionStorage['sente'] ? (sessionStorage['sente'] === 'true') : false,
-        senteBox: sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): [], //todo with chessBox
+        senteBox: /* sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): */ [], //todo with chessBox
         winner: sessionStorage['winner'] ? sessionStorage['winner'] : '',
         turn: sessionStorage['turn'] ? (sessionStorage['turn'] === 'true') : false,
         roomOwner: sessionStorage['roomOwner'] ? sessionStorage['roomOwner'] : '',
@@ -782,17 +782,17 @@
         this.$nextTick(() => {
           document.getElementById('chatPanel').scrollTop = document.getElementById('chatPanel').scrollHeight;
         });
-        sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
+        // sessionStorage['chatMsgList']=JSON.stringify(this.chatMsgList);
       },
-      chessList(){
-        // sessionStorage['chessList']=this.chessList;
+      /*chessList(){
+        sessionStorage['chessList']=this.chessList;
       },
       chessRecordList(){
         sessionStorage['chessRecordList']=JSON.stringify(this.chessRecordList);
       },
       chessBox(){
         sessionStorage['chessBox']=JSON.stringify(this.chessBox);
-      },
+      }, */
       selfTurn(){
         sessionStorage['selfTurn']=this.selfTurn;
       },
@@ -826,12 +826,12 @@
       p1Avatar(){
         sessionStorage['p1Avatar']=this.p1Avatar;
       },
-      p2Avatar(){
+     /*  p2Avatar(){
         sessionStorage['p2Avatar']=this.p2Avatar;
       },
       p1Choose(){
         sessionStorage['p1Choose']=this.p1Choose;
-      },
+      }, */
       p2Choose(){
         sessionStorage['p2Choose']=this.p2Choose;
       },
@@ -844,9 +844,9 @@
       sente(){
         sessionStorage['sente']=this.sente;
       },
-      senteBox(){
+      /* senteBox(){
         sessionStorage['senteBox']=JSON.stringify(this.senteBox);
-      },
+      }, */
       winner(){
         sessionStorage['winner']=this.winner;
       },
@@ -866,15 +866,18 @@
     created() {
       document.title = '房间 ' + this.$route.params.roomId
     },
-    updated(){
-      // this.initChessBoard();
-      this.$nextTick(()=>{
-        this.initChessBoard();
-      });
-    },
+    // updated(){
+    //   // this.initChessBoard();
+    //   this.$nextTick(()=>{
+    //     this.initChessBoard();
+    //   });
+    // },
     mounted() {
+      // this.$forceNextTick(()=>{
+
+      // });
       // setTimeout(()=>{
-        // this.initChessBoard();
+        this.initChessBoard();
         this.enterRoom(); //todo in hall page
         this.render();
       // },5000)
