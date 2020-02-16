@@ -59,6 +59,8 @@
         this.stompClient.connect({}, succcess => {
           this.stompClient.subscribe('/topic/ranking', frame => {
             this.list=frame.body;
+            console.log(this.list.length);
+            console.log(typeof this.list);
           }, fail => {
 
           })

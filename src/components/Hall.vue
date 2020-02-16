@@ -109,7 +109,8 @@ export default {
       columns: 2,
       curRoomsCount: 0,
       roomUid: "",
-      roomId: ""
+      roomId: "",
+      curRooms: []
     };
   },
   methods: {
@@ -135,17 +136,28 @@ export default {
         position: "bottom-right"
       });
     },
-    roomClicked: function(roomId) { //TODO check owner and roomUid
+    roomClicked: function(roomId) {
+      //TODO check owner and roomUid
       console.log(roomId);
-      api.requestWithToken("/room/"+roomId,"get",{},res=>{  //get Room Info
-        if(res.data.code===200){
-          //...
-          this.$router.push("/room/" + roomId);
-        }
-      },err=>{
+      api.requestWithToken(
+        "/room/" + roomId,
+        "get",
+        {},
+        res => {
+          //get Room Info
+          if (res.data.code === 200) {
+            //...
+            const status=res.data.data.status;
+            if(status === 'FULL'){
 
-      })
-      
+            }else{
+              //empty and in-game
+              this.$router.push("/room/" + roomId);
+            }            
+          }
+        },
+        err => {}
+      );
     },
     userDetails: function() {
       //todo
@@ -218,6 +230,30 @@ export default {
         err => {}
       );
       // return 4 * this.rows + this.columns;
+    },
+    enterHall() {
+      this.stompClient.connect(
+        {},
+        success => {
+          this.stompClient.subscribe("/topic/hall/rooms", frame => {
+            //todo create room
+            this.curRooms = JSON.parse(frame.body);
+            if (this.curRooms != null) {
+              console.log(typeof this.curRooms);
+              console.log(this.curRooms.length);
+              this.curRoomsCount = this.curRooms.length;
+              this.roomId = this.curRoomsCount.toString();
+              this.rows = Math.floor(parseInt(this.roomId) / 4);
+              this.columns = parseInt(this.roomId) % 4;
+              //push into sessionStorage
+              if (this.columns > 0) {
+                this.rows++;
+              }
+            }
+          });
+        },
+        fail => {}
+      );
     }
     // genUniqRoomId() {
     //     // if (this.currentUsersCount === 0) { //TODO check room owner from server
@@ -229,6 +265,7 @@ export default {
     //   },
   },
   mounted() {
+    this.enterHall();
     this.ranking();
   }
 };

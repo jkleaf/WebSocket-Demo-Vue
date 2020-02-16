@@ -31,11 +31,7 @@ export default new Vuex.Store({
   actions: {
     connect(context) {
       context.state.stomp = Stomp.over(new SockJS("/ws/endpoint"));
-      context.state.stomp.connect({}, success => { //全局
-        
-        context.state.stomp.subscribe("/topic/game/chess", frame => {
-
-        });
+      context.state.stomp.connect({}, success => { //全局                
         
         context.state.stomp.subscribe("/topic/home", frame => { //接收服务端消息推送(定时+系统消息)
           console.log(frame.body);
