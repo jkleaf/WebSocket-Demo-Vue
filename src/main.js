@@ -46,7 +46,7 @@ router.beforeEach((to, from, next) => {
 new Vue({
   el: '#app',
   router,
-  store, //把 store 的实例注入所有的子组件
+  store,
   components: {App},
   template: '<App/>'
 })

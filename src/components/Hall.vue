@@ -6,7 +6,7 @@
         <el-button size="large" @click="openReplyNotification">回复</el-button>
       </el-badge>
       <el-badge :value="2" class="item" type="primary">
-        <el-button size="large" @click>系统消息</el-button>
+        <el-button size="large">系统消息</el-button>
       </el-badge>
       <el-dropdown>
         <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -56,7 +56,7 @@
       </el-aside>
       <el-container>
         <el-main style="background-color: rgb(238, 241, 246); height: 100vh;">
-          <el-row :gutter="20" v-for="i in rows-1" :key="i">
+          <el-row :gutter="20" v-for="i in rows" :key="i">
             <el-col :span="6" v-for="j in 4" :key="j">
               <div class="grid-content bg-purple">
                 <span @click="roomClicked((i-1)*4+j)" class="room-span">Room {{(i-1)*4+j}}</span>
@@ -67,7 +67,7 @@
           <el-row :gutter="20">
             <el-col :span="6" v-for="j in columns" :key="j">
               <div class="grid-content bg-purple">
-                <span @click="roomClicked(4*(rows-1)+j)" class="room-span">Room {{(rows-1)*4+j}}</span>
+                <span @click="roomClicked(4*(rows)+j)" class="room-span">Room {{(rows)*4+j}}</span>
                 <!--                <route-link :to="'/room/'+roomId"></route-link>-->
               </div>
             </el-col>
@@ -105,8 +105,8 @@ export default {
       squareUrl:
         "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
       rankingList: [],
-      rows: 6,
-      columns: 2,
+      rows: 0,
+      columns: 0,
       curRoomsCount: 0,
       roomUid: "",
       roomId: "",
@@ -114,6 +114,9 @@ export default {
     };
   },
   methods: {
+    getHistoryData(){
+      //sessionStorage      
+    },
     logout: function() {
       const _this = this;
       this.$confirm("确认退出吗?", "提示", {
@@ -147,13 +150,12 @@ export default {
           //get Room Info
           if (res.data.code === 200) {
             //...
-            const status=res.data.data.status;
-            if(status === 'FULL'){
-
-            }else{
+            const status = res.data.data.status;
+            if (status === "FULL") {
+            } else {
               //empty and in-game
               this.$router.push("/room/" + roomId);
-            }            
+            }
           }
         },
         err => {}
@@ -201,12 +203,14 @@ export default {
                 console.log(res.data);
                 if (res.data.code === 200) {
                   //rows<=11
-                  if (this.roomId % 4 === 0) {
-                    this.rows++;
-                    this.columns = 1;
-                  } else {
-                    this.columns++;
-                  }
+                  // if (this.roomId % 4 === 0) {
+                  //   this.rows++;
+                  //   this.columns = 1;
+                  // } else {
+                  //   this.columns++;
+                  // }
+                  this.rows = Math.floor(this.curRoomsCount / 4);
+                  this.columns = this.curRoomsCount % 4;
                   this.$message({
                     message: "你已成为房主",
                     type: "success"
@@ -231,7 +235,30 @@ export default {
       );
       // return 4 * this.rows + this.columns;
     },
+    setRowsCols() {
+      this.$nextTick(()=>{
+        this.curRoomsCount = this.curRooms.length;
+        this.roomId = (this.curRoomsCount + 1).toString();
+        this.rows = Math.floor(this.curRoomsCount / 4);
+        this.columns = this.curRoomsCount % 4;
+      })      
+    },
+    getCurRoomsInfo() {
+      api.requestWithToken(
+        "/room/cur/rooms",
+        "get",
+        {},
+        res => {
+          this.curRooms = res.data.data;
+          this.setRowsCols();
+        },
+        err => {}
+      );
+    },
     enterHall() {
+      //sovle concurrent
+      console.log("enter hall");
+      this.getCurRoomsInfo(); //TODO reload page when back to home
       this.stompClient.connect(
         {},
         success => {
@@ -241,14 +268,14 @@ export default {
             if (this.curRooms != null) {
               console.log(typeof this.curRooms);
               console.log(this.curRooms.length);
-              this.curRoomsCount = this.curRooms.length;
-              this.roomId = this.curRoomsCount.toString();
-              this.rows = Math.floor(parseInt(this.roomId) / 4);
-              this.columns = parseInt(this.roomId) % 4;
-              //push into sessionStorage
-              if (this.columns > 0) {
-                this.rows++;
+              if (
+                this.curRooms.filter(
+                  room => room.owner == this.user.username
+                ) == ''
+              ) {
+                this.setRowsCols();
               }
+              //push into sessionStorage
             }
           });
         },
@@ -267,6 +294,9 @@ export default {
   mounted() {
     this.enterHall();
     this.ranking();
+  },
+  watch: {
+    // "$route": "getCurRoomsInfo"
   }
 };
 </script>

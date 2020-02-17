@@ -529,7 +529,6 @@
       },
       quit() {
         this.$confirm("确认退出吗?", "提示", {}).then(() => {
-          this.sendLeaveMsg();
           if (this.currentUsersCount === 1) {
             //todo
             // put request
@@ -549,11 +548,13 @@
           this.clearRoomInfo();
           //TODO post to server
           api.requestWithToken("/room/leave/"+this.roomUid,"delete",{},res=>{
-            console.log(res.data);            
+            console.log(res.data);                        
+            this.sendLeaveMsg();
           },err=>{
 
-          });
+          });                   
           this.$router.replace({path: '/home'});
+          // this.$router.go({path:'/home'});
         })
       },
       sendLeaveMsg() {
