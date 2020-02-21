@@ -114,8 +114,8 @@ export default {
     };
   },
   methods: {
-    getHistoryData(){
-      //sessionStorage      
+    getHistoryData() {
+      //sessionStorage
     },
     logout: function() {
       const _this = this;
@@ -141,25 +141,37 @@ export default {
     },
     roomClicked: function(roomId) {
       //TODO check owner and roomUid
-      console.log(roomId);
-      api.requestWithToken(
-        "/room/" + roomId,
-        "get",
-        {},
-        res => {
-          //get Room Info
-          if (res.data.code === 200) {
-            //...
-            const status = res.data.data.status;
-            if (status === "FULL") {
-            } else {
-              //empty and in-game
-              this.$router.push("/room/" + roomId);
-            }
-          }
-        },
-        err => {}
-      );
+      console.log(roomId);      
+      const roomInfo = this.curRooms.find(room => room.id == roomId);
+      console.log(roomInfo);
+      console.log(roomInfo.status);
+      //TODO
+      switch (roomInfo.status) {
+        case "FULL":
+          this.$message({
+            message: "房间人数已满~",
+            type: "warning"
+          });
+          break;
+        case "EMPTY":
+          //TODO
+          // if permiss then ...
+          this.$message({
+            message: "成功进入房间~",
+            type: "success" 
+          });
+          this.$router.replace({
+            path: "/room/" + roomId,
+            query: { roomUid: roomInfo.uid, owner: roomInfo.owner }
+          });
+          break;
+        case "IN_GAME":
+          this.$message({
+            message: "游戏中~",
+            type: "success"
+          });
+          break;
+      }
     },
     userDetails: function() {
       //todo
@@ -217,7 +229,7 @@ export default {
                   });
                   this.$router.replace({
                     path: "/room/" + this.roomId,
-                    query: { roomUid: this.roomUid }
+                    query: { roomUid: this.roomUid ,owner: this.user.username}
                   });
                 } else {
                 }
@@ -236,12 +248,12 @@ export default {
       // return 4 * this.rows + this.columns;
     },
     setRowsCols() {
-      this.$nextTick(()=>{
+      this.$nextTick(() => {
         this.curRoomsCount = this.curRooms.length;
         this.roomId = (this.curRoomsCount + 1).toString();
         this.rows = Math.floor(this.curRoomsCount / 4);
         this.columns = this.curRoomsCount % 4;
-      })      
+      });
     },
     getCurRoomsInfo() {
       api.requestWithToken(
@@ -271,7 +283,7 @@ export default {
               if (
                 this.curRooms.filter(
                   room => room.owner == this.user.username
-                ) == ''
+                ) == ""
               ) {
                 this.setRowsCols();
               }
@@ -297,6 +309,9 @@ export default {
   },
   watch: {
     // "$route": "getCurRoomsInfo"
+    curRooms() {
+      sessionStorage["curRooms"] = JSON.stringify(this.curRooms);
+    }
   }
 };
 </script>

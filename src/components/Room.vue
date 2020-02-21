@@ -3,18 +3,20 @@
     <el-container>
       <el-header height="60px">
         <el-button type="info" @click="quit" :disabled="!gameOver" class="quit">退出</el-button>
-        <el-button type="primary" @click="chooseP1" :disabled="player1!==''" class="quit">{{p1Choose?'取消选择':'选择P1'}}
+        <el-button type="primary" @click="chooseP1" :disabled="player1!==''&&player1!==currentUsername" class="quit">{{p1Choose?'取消选择':'选择P1'}}
         </el-button>
         <!--Test-->
-        <el-button type="primary" @click="chooseP2" :disabled="player2!==''" class="quit">{{p2Choose?'取消选择':'选择P2'}}
+        <el-button type="primary" @click="chooseP2" :disabled="player2!==''&&player2!==currentUsername" class="quit">{{p2Choose?'取消选择':'选择P2'}}
         </el-button>
-        <el-button type="primary" @click="readyForP1" :disabled="player1!==currentUsername" class="quit">
+        <el-button type="primary" @click="readyForP1" :disabled="(player1!==currentUsername)||gameStart" class="quit">
           {{p1Ready?'取消准备':'P1准备'}}
         </el-button>
-        <el-button type="primary" @click="readyForP2" :disabled="player2!==currentUsername" class="quit">
+        <el-button type="primary" @click="readyForP2" :disabled="(player2!==currentUsername)||gameStart" class="quit">
           {{p2Ready?'取消准备':'P2准备'}}
         </el-button>
-        <el-button type="primary" @click.once="startGame" :disabled="gameStart">{{gameStart?'取消':'开始游戏'}}</el-button>
+        <span style="margin-left: 10px;">{{p1Ready?'玩家1已准备':'玩家1未准备'}}</span>
+        <span>{{p2Ready?'玩家2已准备':'玩家2未准备'}}</span>
+        <el-button type="primary" @click.once="startGame" :disabled="!p1Ready||!p2Ready">{{gameStart?'取消':'开始游戏'}}</el-button>
         <!--Test-->
         <i class="fa fa-align-justify icon-2x collapse-aside" aria-hidden="true" @click="hideAside"></i>
       </el-header>
@@ -28,7 +30,7 @@
             <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="150"
                        style="margin-right: 30px"></el-avatar>
             <el-avatar src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" :size="150"
-                       style="margin-left: 30px"></el-avatar>
+                       style="margin-left: 30px"></el-avatar>                        
           </div>
           <div style="height: 60px;">
             <el-button type="warning" class="proposeDraw" @click="proposeDraw">求和</el-button>
@@ -178,7 +180,7 @@
         turn: sessionStorage['turn'] ? (sessionStorage['turn'] === 'true') : false,
         roomOwner: sessionStorage['roomOwner'] ? sessionStorage['roomOwner'] : '',
         gameStart: sessionStorage['gameStart'] ? (sessionStorage['gameStart'] === 'true') : false,
-        gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady'] === 'true') : false,
+        // gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady'] === 'true') : false,
       }
     },
     methods: {
@@ -189,7 +191,16 @@
         this.chessBox=sessionStorage['chessBox'] ? JSON.parse(sessionStorage['chessBox']) : [];
         this.senteBox=sessionStorage['senteBox']? JSON.parse(sessionStorage['senteBox']): [];
       },
-      chooseP1() { //set disabled
+      //TODO directly choose other player when the btn was not canceled
+      chooseP1() { //set disabled        
+        if(this.p1Ready){
+          if(this.p1Choose){
+          this.$message({
+            message: '请先取消准备!',
+            type: 'warning'
+          })
+          }
+        }else{
         this.p1Choose = !this.p1Choose;
         this.isP1 = true;
         this.isP2 = false;
@@ -208,8 +219,17 @@
         const flag = this.player1 === this.player2;
         this.choosePlayers('1', this.player1, this.p1Choose);
         // this.choosePlayers('2','');
+        }
       },
-      chooseP2() { //set disabled
+      chooseP2() { //set disabled      
+        if(this.p2Ready){
+          if(this.p2Choose){
+          this.$message({
+            message: '请先取消准备!',
+            type: 'warning'
+          })
+          }
+        }else{        
         this.p2Choose = !this.p2Choose;
         this.isP2 = true;
         this.isP1 = false;
@@ -225,6 +245,7 @@
         const flag = this.player1 === this.player2;
         this.choosePlayers('2', this.player2, this.p2Choose);
         // this.choosePlayers('1','');
+        }
       },
       readyForP1() {
         this.p1Ready = !this.p1Ready;
@@ -235,7 +256,7 @@
         this.ready(this.p2Ready);
       },
       ready(ready) { //TODO
-        this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
+        this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
           type: 'READY',
           content: JSON.stringify({
             ready: ready,
@@ -243,21 +264,18 @@
           })
         }))
       },
-      checkReady() {
-        return this.p1Ready && this.p2Ready;
-      },
       startGame() { //TODO
         if (this.ready && this.roomOwner === this.currentUsername) {
           this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
             type: 'START', content: this.currentUsername
           }));
-          this.gameStart = true;
+          this.gameStart = true;        
         } else {
           //TODO show no-prepared message or disable the btn then hint owner
         }
       },
       async choosePlayers(player, username, confirm) { //TODO cancel
-        await this.stompClient.send('/ws/' + this.roomUid + '/game/choice', {}, JSON.stringify({
+        await this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
           type: 'CHOICE',
           content: JSON.stringify({
             player: player,
@@ -286,10 +304,10 @@
       createRoom() { //TODO
         // api.requestWithToken("/room/" + this.roomUid, "post", {}, res => {
         //   if (res.data.code === 200) {
-            this.roomOwner = this.currentUsername;
+            // this.roomOwner = this.currentUsername;
             // this.roomUid=this.$route.params.roomUid;
-            this.roomUid=this.$route.query.roomUid;
-            sessionStorage['roomUid']=this.roomUid;            
+            // this.roomUid=this.$route.query.roomUid;
+            // sessionStorage['roomUid']=this.roomUid;            
         //   }        
       },
       initChessBoard() {
@@ -584,7 +602,10 @@
           // console.log(this.roomUid);
           this.createRoom();
         }
-        this.currentUsersCount++;
+        this.roomUid=this.$route.query.roomUid;
+        sessionStorage['roomUid']=this.roomUid;
+        this.roomOwner=this.$route.query.owner;
+        this.currentUsersCount++; //TODO broadcast
         this.maxUsersCount = this.currentUsersCount > this.maxUsersCount ? this.currentUsersCount : this.maxUsersCount;
       },
       enterRoom() {        
@@ -646,7 +667,7 @@
             }
           }, fail => {
           });
-          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/choice', frame => { //async
+          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => { //async
             const msg = JSON.parse(frame.body);
             if (msg.type === 'CHOICE') {
               const choice = JSON.parse(msg.content);
@@ -657,51 +678,51 @@
                 if (this.player2 === choice.username) {
                   this.player2 = '';
                 }
+                if(choice.confirm){
                 this.$message({
                   message: '玩家' + this.player1 + '选择了1P',
                   type: 'success'
                 });
+                }else{
+                  this.player1='';
+                }
               } else if (choice.player === '2') {
                 this.player2 = choice.username;
                 if (this.player1 === choice.username) {
                   this.player1 = '';
                 }
+                if(choice.confirm){
                 this.$message({
                   message: '玩家' + this.player2 + '选择了2P',
                   type: 'success'
                 });
+                }else{
+                  this.player2='';
+                }
               }
               // sessionStorage['player1']=this.player1;
               // sessionStorage['player2']=this.player2;
             } else if (msg.type === 'READY') { //p1 || p2
               const content = JSON.parse(msg.content);
-              if (content.ready === 'true') {
+              if (content.ready === true) {
                 if (this.player1 === content.username) {
                   this.p1Ready = true;
                 } else {
                   this.p2Ready = true;
                 }
-              } else if (content.ready === 'false') {
+              } else if (content.ready === false) {
                 if (this.player1 === content.username) {
                   this.p1Ready = false;
                 } else {
                   this.p2Ready = false;
                 }
               }
+            } else if(msg.type==='START'){
+                this.gameStart=true;
+            } else if(msg.type==='FINISH'){
+
             }
-          });
-          this.stompClient.subscribe('/topic/' + this.roomUid + '/game/common/notification', frame => {
-            const notification = JSON.parse(frame.body);
-            //TODO
-            if(notification.type==='START'){
-              this.gameStart=true;
-            }/* else if(notification.type==='FINISH'){
-
-            } */
-            
-          }, fail => {
-
-          });
+          });        
           // TODO join
         this.stompClient.send('/ws/'+this.roomUid+'/topic/game/chat',{},JSON.stringify({
           type: 'JOIN',
@@ -757,6 +778,16 @@
           this.p2Avatar = this.defaultAvatarUrl;
           // sessionStorage['player2']=this.player2;
         }
+      },
+      startTimer(){
+        this.timer=setInterval(this.timer,1000);
+      },
+      timer(){
+        //TODO  
+      },
+      stopTimer(){
+        //clear
+        clearInterval(this.timer);
       },
       render() { //todo
 
@@ -857,9 +888,9 @@
       gameStart(){
         sessionStorage['gameStart']=this.gameStart;
       },
-      gameReady(){
-        sessionStorage['gameReady']=this.gameReady;
-      }
+      // gameReady(){
+      //   sessionStorage['gameReady']=this.gameReady;
+      // }
     },
     created() {
       document.title = '房间 ' + this.$route.params.roomId
