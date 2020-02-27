@@ -82,6 +82,13 @@ export const postJSONRequest = (url, params, success, error) => {
     data: params,
   }).then(success).catch(error);
 }
+export const postJSONRequestWithToken = (url, params, success, error) => {
+  axios({
+    method: 'post',
+    url: `${base}${url}`,
+    data: params,
+  }).then(success).catch(error);
+}
 export const uploadFileRequest = (url, params) => {
   return axios({
     method: 'post',

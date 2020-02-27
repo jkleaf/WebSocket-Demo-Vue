@@ -12,6 +12,7 @@ import {putRequest} from './utils/api'
 import {requestWithoutToken} from './utils/api'
 import {postJSONRequest} from './utils/api'
 import {requestWithToken} from './utils/api'
+import {postJSONRequestWithToken} from './utils/api'
 
 Vue.config.productionTip = false;
 
@@ -25,6 +26,7 @@ Vue.prototype.getRequest = getRequest;
 Vue.prototype.postRequest = postRequest;
 Vue.prototype.deleteRequest = deleteRequest;
 Vue.prototype.putRequest = putRequest;
+Vue.prototype.postJSONRequestWithToken = postJSONRequestWithToken;
 
 router.beforeEach((to, from, next) => {
     if (to.name === 'Login') {

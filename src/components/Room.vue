@@ -22,7 +22,7 @@
       </el-header>
       <el-container>
         <el-main>
-          <span></span>
+          <span id="timer" class="timer">{{timeTxt}}</span>
           <canvas id="chessboard" width="510px" height="510px"></canvas> <!--todo dynamically change-->
         </el-main>
         <el-aside width="550px" :class="{'display-none':asideHidden}">
@@ -88,7 +88,7 @@
                       <!--                    <i style="background-color: rgb(255, 193, 7);">o</i>-->
                       <!--                    <img :src=""/>-->
                       <span style="font-size: 10px; color: #7600ff; font-weight: bold;">
-                        {{record.player}} : ({{record.x}},{{record.y}}) [{{chessBox[record.x][record.y]}}]
+                        {{record.player}}[{{record.time}}] : ({{record.x}},{{record.y}}) [{{chessBox[record.x][record.y]}}]
                       </span>
                     </li>
                   </ul>
@@ -126,7 +126,7 @@
     name: "Room",
     data() {
       return {
-        roomUid: sessionStorage['roomUid'] ? sessionStorage['roomuid'] : '',
+        roomUid: sessionStorage['roomUid'] ? sessionStorage['roomuid'] : '',        
         currentUsersCount: sessionStorage['currentUsersCount'] ? parseInt(sessionStorage['currentUsersCount']) : 0,
         maxUsersCount: sessionStorage['maxUsersCount'] ? parseInt(sessionStorage['maxUsersCount']) : 0, //todo
         percentage: 10,
@@ -180,7 +180,12 @@
         turn: sessionStorage['turn'] ? (sessionStorage['turn'] === 'true') : false,
         roomOwner: sessionStorage['roomOwner'] ? sessionStorage['roomOwner'] : '',
         gameStart: sessionStorage['gameStart'] ? (sessionStorage['gameStart'] === 'true') : false,
-        // gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady'] === 'true') : false,
+        chessGameUid: sessionStorage['chessGameUid'] ? sessionStorage['chessGameUid'] : '',
+        // gameReady: sessionStorage['gameReady'] ? (sessionStorage['gameReady'] === 'true') : false,        
+        time: 0,
+        timeTxt: '00:00',
+        timer: '',
+        timerCount: 0,
       }
     },
     methods: {
@@ -267,12 +272,19 @@
       startGame() { //TODO
         if (this.ready && this.roomOwner === this.currentUsername) {
           this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
-            type: 'START', content: this.currentUsername
+            type: 'START', content: this.currentUsername //TODO send uid
           }));
           this.gameStart = true;        
+          this.startTimer();
+          this.genChessGameUid();
         } else {
           //TODO show no-prepared message or disable the btn then hint owner
         }
+        /* test */
+        // this.startTimer();
+      },
+      genChessGameUid(){
+
       },
       async choosePlayers(player, username, confirm) { //TODO cancel
         await this.stompClient.send('/ws/' + this.roomUid + '/game/common/notification', {}, JSON.stringify({
@@ -434,7 +446,8 @@
         this.chessRecordList.push({
           player: player,
           x: i,
-          y: j
+          y: j,
+          time: this.timeTxt
         });
       },
       // updateRecordPanel(chessRecord) { //todo
@@ -530,8 +543,27 @@
         }
       },
       gameover() { //todo
-        this.gameOver = true;        
-        //TODO post to server        
+        this.gameOver = true;             
+        this.stopTimer();           
+        //TODO post to server  (chessboard_uid,p1,p2,winner,chessInfo)
+        if(this.roomOwner===this.currentUsername){  //limit post only once
+          api.postJSONRequestWithToken("/chess/game/"+this.chessGameUid,"post",JSON.stringify({
+            p1: this.player1,
+            p2: this.player2,
+            chessInfo: JSON.stringify(this.chessRecordList),
+            winner: this.player1===this.winner? "1":"2"
+          }),res=>{
+            console.log(res.data);
+            if(res.data.code===200){
+              console.log('successfully uploaded game data');
+              this.chessGameUid=''; //clear
+            }else{
+
+            }
+          },err=>{
+
+          }); 
+        }
       },
       increase() {
         this.percentage += 10;
@@ -719,7 +751,11 @@
               }
             } else if(msg.type==='START'){
                 this.gameStart=true;
+                this.startTimer();
             } else if(msg.type==='FINISH'){
+
+            } else if(msg.type==='TIMER'){ //todo
+              this.timeTxt=msg.content;
 
             }
           });        
@@ -779,16 +815,36 @@
           // sessionStorage['player2']=this.player2;
         }
       },
-      startTimer(){
-        this.timer=setInterval(this.timer,1000);
+      startTimer(){ //todo if this.gameStart ...
+        this.resetTimer();
+        console.log('start...');
+        this.timer=setInterval(this.countDown,1000);
       },
-      timer(){
+      countDown(){ //count up
         //TODO  
+        this.timerCount++;
+        let min = Math.floor(this.timerCount/60);
+        let sec = Math.floor(this.timerCount%60);
+        this.timeTxt=this.timerToDub(min)+':'+this.timerToDub(sec);
+        this.stompClient.send("/game/common/notification",{},this.timeTxt); //maybe or send start msg
       },
-      stopTimer(){
-        //clear
+      timerToDub(time){
+        return time<10?'0'+time:''+time;
+      },
+      stopTimer(){      
+        api.requestWithToken("/chess/game","post",{},res=>{
+
+        },err=>{
+
+        });
         clearInterval(this.timer);
       },
+      resetTimer(){
+        clearInterval(this.timer);
+        this.time=0;
+        this.timeTxt="00:00";
+        this.timerCount=0;
+      },      
       render() { //todo
 
       }
@@ -888,6 +944,9 @@
       gameStart(){
         sessionStorage['gameStart']=this.gameStart;
       },
+      chessGameUid(){
+        sessionStorage['chessGameUid']=this.chessGameUid;
+      }
       // gameReady(){
       //   sessionStorage['gameReady']=this.gameReady;
       // }
@@ -944,7 +1003,7 @@
     background-color: #E9EEF3;
     color: #333;
     text-align: center;
-    line-height: 160px;
+    /* line-height: 160px; */
   }
 
   body > .el-container {
@@ -1084,5 +1143,9 @@
     line-height: 1.5rem;
     padding-left: 68px;
     position: relative;
+  }
+
+  .timer{
+    line-height: 0px;
   }
 </style>
