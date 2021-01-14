@@ -59,16 +59,20 @@
           <el-row :gutter="20" v-for="i in rows" :key="i">
             <el-col :span="6" v-for="j in 4" :key="j">
               <div class="grid-content bg-purple">
+                <el-tooltip class="item" effect="dark" content="房间人数:1 游戏状态:未开始" placement="bottom">
                 <span @click="roomClicked((i-1)*4+j)" class="room-span">Room {{(i-1)*4+j}}</span>
                 <!--                <route-link :to="'/room/'+roomId"></route-link>-->
+                </el-tooltip>
               </div>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :span="6" v-for="j in columns" :key="j">
               <div class="grid-content bg-purple">
+                <el-tooltip class="item" effect="dark" content="房间人数:1 游戏状态:未开始" placement="bottom">
                 <span @click="roomClicked(4*(rows)+j)" class="room-span">Room {{(rows)*4+j}}</span>
                 <!--                <route-link :to="'/room/'+roomId"></route-link>-->
+                </el-tooltip>
               </div>
             </el-col>
           </el-row>
@@ -178,13 +182,13 @@ export default {
       this.$router.push("/user/info");
     },
     ranking() {
-      // this.stompClient.connect({}, success => {
-      //   this.stompClient.subscribe('/topic/ranking', frame => {
-      //     this.rankingList = JSON.parse(frame.body); //ranking({rank,username,score})
-      //   });
-      // }, failed => {
-      //
-      // });
+      this.stompClient.connect({}, success => {
+        this.stompClient.subscribe('/topic/ranking', frame => {
+          this.rankingList = JSON.parse(frame.body); //ranking({rank,username,score})
+        });
+      }, failed => {
+      
+      });
     },
     createRoom() {
       // const roomId = this.getCurMaxRoomId();
@@ -270,7 +274,8 @@ export default {
     enterHall() {
       //sovle concurrent
       console.log("enter hall");
-      this.getCurRoomsInfo(); //TODO reload page when back to home
+      // this.getCurRoomsInfo(); //TODO reload page when back to home
+      setInterval(this.getCurRoomsInfo,2000)
       this.stompClient.connect(
         {},
         success => {
@@ -309,9 +314,9 @@ export default {
   },
   watch: {
     // "$route": "getCurRoomsInfo"
-    curRooms() {
-      sessionStorage["curRooms"] = JSON.stringify(this.curRooms);
-    }
+    // curRooms() {
+    //   sessionStorage["curRooms"] = JSON.stringify(this.curRooms);
+    // }
   }
 };
 </script>
@@ -393,4 +398,14 @@ export default {
   margin-left: 25%;
   margin-top: 10px;
 }
+
+.item {
+      margin: 4px;
+}
+
+.bottom {
+  clear: both;
+  text-align: center;
+}
+
 </style>

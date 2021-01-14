@@ -782,6 +782,16 @@
             message: '游戏结束,' + (flag ? '玩家' + winner : '恭喜你') + '取得了胜利！',
             type: 'success'
           });
+          if (!flag){ //TODO award or score
+            api.postRequestWithToken("/chess/game/award",{
+              award: 36000 + Math.floor(Math.random()*(9999-1000))+1000
+            }),res=>{
+              //TODO
+              
+            },err=>{
+
+            };
+          }
           return true;
         } else {
           return false;

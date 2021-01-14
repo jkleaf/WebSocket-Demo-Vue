@@ -40,7 +40,7 @@ export const postRequestWithToken = (url, params, success, error) => {
     // }],
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'token': "Bearer "+sessionStorage['token']
+      'Authorization': "Bearer "+sessionStorage['token']
     }
   }).then(success).catch(error);
 }
