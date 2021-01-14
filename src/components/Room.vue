@@ -597,12 +597,15 @@
           });
           this.clearRoomInfo();
           //TODO post to server
-          api.requestWithToken("/room/leave/"+this.roomUid,"delete",{},res=>{
-            console.log(res.data);                        
-            this.sendLeaveMsg();
-          },err=>{
+          this.sendLeaveMsg();
+          if(this.roomOwner == this.currentUsername){ //TODO if room owner leave,delete the room
+            api.requestWithToken("/room/leave/"+this.roomUid,"delete",{},res=>{
+              console.log(res.data);                        
+              // this.sendLeaveMsg();
+            },err=>{
 
-          });                   
+            });
+          }
           this.$router.replace({path: '/home'});
           // this.$router.go({path:'/home'});
         })

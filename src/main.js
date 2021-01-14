@@ -3,6 +3,8 @@ import App from './App'
 import router from './router'
 import store from './store'
 import ElementUI from 'element-ui'
+import * as echarts from 'echarts'
+// import echarts from 'echarts';
 import 'element-ui/lib/theme-chalk/index.css';
 import {postRequestWithToken} from './utils/api'
 import {getRequest} from './utils/api'
@@ -27,6 +29,7 @@ Vue.prototype.postRequest = postRequest;
 Vue.prototype.deleteRequest = deleteRequest;
 Vue.prototype.putRequest = putRequest;
 Vue.prototype.postJSONRequestWithToken = postJSONRequestWithToken;
+Vue.prototype.$echarts = echarts
 
 router.beforeEach((to, from, next) => {
     if (to.name === 'Login') {
